@@ -1,0 +1,18 @@
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+
+/** Hashes a password with scrypt. Returns `salt:hash` (both hex). */
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16)
+  const hash = scryptSync(password, salt, 64)
+  return `${salt.toString('hex')}:${hash.toString('hex')}`
+}
+
+/** Verifies a password against a stored `salt:hash` value. */
+export function verifyPassword(password: string, stored: string): boolean {
+  const [saltHex, hashHex] = stored.split(':')
+  if (!saltHex || !hashHex) return false
+  const salt = Buffer.from(saltHex, 'hex')
+  const expected = Buffer.from(hashHex, 'hex')
+  const actual = scryptSync(password, salt, expected.length)
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
