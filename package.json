@@ -1,0 +1,27 @@
+{
+  "name": "rule-wars",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "rules:generate": "node scripts/generate-rules.mjs",
+    "rules:enrich": "node scripts/enrich-rules.mjs"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "@nuxt/ui": "^4.8.2",
+    "drizzle-orm": "^0.45.2",
+    "nuxt": "^4.4.8",
+    "shiki": "^4.2.0",
+    "vue": "^3.5.35",
+    "vue-router": "^5.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.113"
+  }
+}
