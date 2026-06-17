@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Rule, RuleTally } from '#shared/types/rule'
 
-const props = defineProps<{ rule: Rule; tally?: RuleTally }>()
+const props = defineProps<{ rule: Rule; tally?: RuleTally; hideGroup?: boolean }>()
 </script>
 
 <template>
@@ -16,7 +16,7 @@ const props = defineProps<{ rule: Rule; tally?: RuleTally }>()
           >
             {{ rule.id }}
           </UBadge>
-          <span class="text-xs text-muted">{{ rule.group }}</span>
+          <span v-if="!hideGroup" class="text-xs text-muted">{{ rule.group }}</span>
         </div>
         <div class="flex items-center gap-2">
           <UTooltip
