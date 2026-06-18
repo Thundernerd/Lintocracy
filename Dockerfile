@@ -8,10 +8,10 @@ WORKDIR /app
 ENV NODE_ENV=development
 
 COPY package.json package-lock.json ./
-RUN npm ci --include=optional \
-  && npm install --no-save @libsql/linux-x64-gnu@0.5.29
+RUN npm ci --include=optional
 
 COPY . .
+RUN npm install --no-save @libsql/linux-x64-gnu@0.5.29
 RUN npm run build
 
 RUN set -eux \
