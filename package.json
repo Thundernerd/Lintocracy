@@ -21,6 +21,10 @@
     "vue-router": "^5.1.0",
     "zod": "^4.4.3"
   },
+  "optionalDependencies": {
+    "@libsql/linux-x64-gnu": "^0.5.29",
+    "@libsql/linux-x64-musl": "^0.5.29"
+  },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.113"
   }

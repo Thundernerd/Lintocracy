@@ -8,7 +8,15 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN npm run build \
+  && mkdir -p .output/server/node_modules/@libsql \
+  && if [ -d node_modules/@libsql/linux-x64-musl ]; then \
+       cp -r node_modules/@libsql/linux-x64-musl .output/server/node_modules/@libsql/; \
+     elif [ -d node_modules/@libsql/linux-x64-gnu ]; then \
+       cp -r node_modules/@libsql/linux-x64-gnu .output/server/node_modules/@libsql/; \
+     else \
+       echo "No libsql linux-x64 native binding found in node_modules" >&2; exit 1; \
+     fi
 
 FROM node:22-alpine AS runner
 

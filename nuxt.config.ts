@@ -10,6 +10,14 @@ export default defineNuxtConfig({
     // Secret used to sign group admin cookies. Set ADMIN_SECRET in production.
     adminSecret: process.env.ADMIN_SECRET || 'dev-insecure-admin-secret',
   },
+  nitro: {
+    externals: {
+      traceInclude: [
+        'node_modules/@libsql/linux-x64-musl',
+        'node_modules/@libsql/linux-x64-gnu',
+      ],
+    },
+  },
   app: {
     head: {
       title: 'Rule Wars — Vote on C# coding standards',
