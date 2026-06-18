@@ -7,11 +7,9 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: ${PORT:-3000}
-      DATABASE_URL: file:/data/rule-wars.db
-      ADMIN_SECRET: ${ADMIN_SECRET:-change-me-to-a-long-random-string}
-      DATABASE_AUTH_TOKEN: ${DATABASE_AUTH_TOKEN:-}
+      NUXT_ADMIN_SECRET: ${ADMIN_SECRET:-change-me-to-a-long-random-string}
     volumes:
-      - rule-wars-data:/data
+      - rule-wars-data:/app/.data
     restart: unless-stopped
     healthcheck:
       test:

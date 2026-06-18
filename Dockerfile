@@ -30,8 +30,8 @@ ENV PORT=3000
 
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nuxtjs \
-  && mkdir -p /data \
-  && chown nuxtjs:nodejs /data
+  && mkdir -p /app/.data \
+  && chown nuxtjs:nodejs /app/.data
 
 COPY --from=build --chown=nuxtjs:nodejs /app/.output ./.output
 
