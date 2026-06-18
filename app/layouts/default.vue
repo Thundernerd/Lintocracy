@@ -110,8 +110,19 @@ const isDark = computed({
     </main>
 
     <footer class="border-t border-default mt-12">
-      <UContainer class="py-6 text-sm text-muted flex flex-col sm:flex-row items-center justify-between gap-2">
+      <UContainer
+        class="py-6 text-sm text-muted flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left"
+      >
         <span>Rule Wars — team voting on C# coding standards.</span>
+        <span>
+          Idea by the one and only amazing
+          <a
+            href="https://brunomikoski.com"
+            target="_blank"
+            rel="noopener"
+            class="text-primary hover:underline"
+          >Bruno Mikoski</a>.
+        </span>
         <span>
           Rules sourced from
           <a
