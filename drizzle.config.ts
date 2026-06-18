@@ -1,13 +1,12 @@
 import { defineConfig } from 'drizzle-kit'
+import { DATABASE_URL } from './shared/constants/database'
 
-// Used for generating/applying migrations against a managed DB in production.
-// Local/dev creates the schema automatically on startup (see server/db/index.ts).
+// Used for generating/applying migrations. Local/dev creates the schema on startup.
 export default defineConfig({
   dialect: 'turso',
   schema: './server/db/schema.ts',
   out: './server/db/migrations',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'file:.data/rule-wars.db',
-    authToken: process.env.DATABASE_AUTH_TOKEN,
+    url: DATABASE_URL,
   },
 })

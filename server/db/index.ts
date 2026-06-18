@@ -10,7 +10,6 @@ function client() {
     const config = useRuntimeConfig()
     _client = createClient({
       url: config.databaseUrl as string,
-      authToken: (config.databaseAuthToken as string) || undefined,
     })
   }
   return _client
