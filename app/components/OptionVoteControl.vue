@@ -3,7 +3,7 @@ import type { RuleOption } from '#shared/types/rule'
 
 const props = defineProps<{ ruleId: string; option: RuleOption }>()
 
-const { optionTallies, myOptionVotes, submitOptionVote, hasGroup } = useVoting()
+const { optionTallies, myOptionVotes, submitOptionVote, removeOptionVote, hasGroup } = useVoting()
 const toast = useToast()
 const busy = ref(false)
 
@@ -16,8 +16,24 @@ function count(value: string) {
   return tally.value?.counts[value] ?? 0
 }
 
+async function clear() {
+  busy.value = true
+  try {
+    await removeOptionVote(props.ruleId, props.option.name)
+  } catch {
+    toast.add({ title: 'Could not remove your option vote', color: 'error', icon: 'i-lucide-x' })
+  } finally {
+    busy.value = false
+  }
+}
+
 async function vote(value: string) {
   if (!hasGroup.value) return
+  if (myValue.value === value) {
+    await clear()
+    return
+  }
+
   busy.value = true
   try {
     await submitOptionVote(props.ruleId, props.option.name, value)
@@ -33,11 +49,23 @@ async function vote(value: string) {
   <div class="rounded-lg border border-default p-4 flex flex-col gap-3">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <code class="text-sm text-primary">{{ option.name }}</code>
-      <div class="flex items-center gap-2 text-xs text-muted">
+      <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
         <span v-if="option.defaultValue">
           default: <code>{{ option.defaultValue }}</code>
         </span>
         <span v-if="tally?.total">· {{ tally.total }} vote{{ tally.total === 1 ? '' : 's' }}</span>
+        <UButton
+          v-if="myValue"
+          size="xs"
+          color="neutral"
+          variant="link"
+          icon="i-lucide-undo-2"
+          :disabled="busy || !hasGroup"
+          class="px-0"
+          @click="clear"
+        >
+          Remove vote
+        </UButton>
       </div>
     </div>
 

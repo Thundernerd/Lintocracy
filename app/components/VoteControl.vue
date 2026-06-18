@@ -6,7 +6,7 @@ const props = withDefaults(
   { defaultSeverity: 'warning' },
 )
 
-const { myVotes, submitVote, hasGroup } = useVoting()
+const { myVotes, submitVote, removeVote, hasGroup } = useVoting()
 const toast = useToast()
 const busy = ref(false)
 
@@ -19,7 +19,27 @@ function fallbackSeverity(): Severity {
   return props.defaultSeverity !== 'none' ? props.defaultSeverity : 'warning'
 }
 
+async function clear() {
+  busy.value = true
+  try {
+    await removeVote(props.ruleId)
+  } catch {
+    toast.add({ title: 'Could not remove your vote', color: 'error', icon: 'i-lucide-x' })
+  } finally {
+    busy.value = false
+  }
+}
+
 async function cast(vote: 'yes' | 'no', severity: Severity | null) {
+  if (vote === 'yes' && choice.value === 'yes' && severity === chosenSeverity.value) {
+    await clear()
+    return
+  }
+  if (vote === 'no' && choice.value === 'no') {
+    await clear()
+    return
+  }
+
   busy.value = true
   try {
     await submitVote(props.ruleId, vote, severity)
@@ -44,7 +64,7 @@ async function cast(vote: 'yes' | 'no', severity: Severity | null) {
   </UButton>
 
   <div v-else class="flex flex-col gap-2">
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <UButton
         :color="choice === 'yes' ? 'primary' : 'neutral'"
         :variant="choice === 'yes' ? 'solid' : 'outline'"
@@ -64,6 +84,17 @@ async function cast(vote: 'yes' | 'no', severity: Severity | null) {
         @click="cast('no', null)"
       >
         No
+      </UButton>
+      <UButton
+        v-if="choice"
+        size="sm"
+        color="neutral"
+        variant="link"
+        icon="i-lucide-undo-2"
+        :disabled="busy"
+        @click="clear"
+      >
+        Remove vote
       </UButton>
     </div>
 

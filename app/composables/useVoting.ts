@@ -115,6 +115,47 @@ export function useVoting() {
     }
   }
 
+  async function removeVote(ruleId: string) {
+    const groupId = activeGroupId.value
+    if (!groupId) throw new Error('No active group')
+    const previous = myVotes.value[ruleId]
+    const next = { ...myVotes.value }
+    delete next[ruleId]
+    myVotes.value = next
+    try {
+      await $fetch('/api/votes', { method: 'DELETE', body: { groupId, ruleId } })
+      await refreshTallies()
+    } catch (error) {
+      const next = { ...myVotes.value }
+      if (previous) next[ruleId] = previous
+      myVotes.value = next
+      throw error
+    }
+  }
+
+  async function removeOptionVote(ruleId: string, optionName: string) {
+    const groupId = activeGroupId.value
+    if (!groupId) throw new Error('No active group')
+    const key = optionKey(ruleId, optionName)
+    const previous = myOptionVotes.value[key]
+    const next = { ...myOptionVotes.value }
+    delete next[key]
+    myOptionVotes.value = next
+    try {
+      await $fetch('/api/option-votes', {
+        method: 'DELETE',
+        body: { groupId, ruleId, optionName },
+      })
+      await refreshTallies()
+    } catch (error) {
+      const restored = { ...myOptionVotes.value }
+      if (previous) restored[key] = previous
+      else delete restored[key]
+      myOptionVotes.value = restored
+      throw error
+    }
+  }
+
   return {
     tallies,
     myVotes,
@@ -128,5 +169,7 @@ export function useVoting() {
     refreshTallies,
     submitVote,
     submitOptionVote,
+    removeVote,
+    removeOptionVote,
   }
 }
