@@ -79,6 +79,47 @@ function firstCsharp(text) {
   return code.trim() ? code : undefined
 }
 
+/** Extracts every ```csharp block from a section. */
+function allCsharpBlocks(text) {
+  if (!text) return []
+  return [...text.matchAll(/```csharp\s*\n([\s\S]*?)```/g)]
+    .map((m) => m[1].replace(/\s+$/, '').trim())
+    .filter(Boolean)
+}
+
+/** Reads `= true` / `= false` from the option comment on the first line of a sample. */
+function optionFlagInBlock(block) {
+  const m = (block.split('\n')[0] || '').match(/=\s*(true|false)\s*$/i)
+  return m ? m[1].toLowerCase() : undefined
+}
+
+/**
+ * Populates `example` or `examples` from all csharp blocks in a docs section.
+ * Pairs of `= true` / `= false` option samples become avoid/prefer examples.
+ */
+function applyExamples(out, md, sectionNames) {
+  const blocks = allCsharpBlocks(section(md, sectionNames))
+  if (!blocks.length) return
+
+  const trueBlock = blocks.find((b) => optionFlagInBlock(b) === 'true')
+  const falseBlock = blocks.find((b) => optionFlagInBlock(b) === 'false')
+
+  if (trueBlock && falseBlock) {
+    out.examples = { bad: trueBlock, good: falseBlock }
+    delete out.example
+    return
+  }
+
+  if (blocks.length === 1) {
+    out.example = blocks[0]
+    delete out.examples
+    return
+  }
+
+  out.example = blocks.join('\n\n')
+  delete out.examples
+}
+
 /** Parses the `## Options` section into structured option blocks (style rules). */
 function parseOptions(md) {
   const body = section(md, ['Options'])
@@ -145,10 +186,12 @@ async function enrich(rule) {
   if (rule.category === 'style') {
     out.description = cleanText(section(md, ['Overview'])) || out.description
     out.options = parseOptions(md)
-    out.example =
-      firstCsharp(section(md, ['Example', 'Examples'])) ||
-      firstCsharp(section(md, ['Options'])) ||
-      firstCsharp(md)
+    applyExamples(out, md, ['Example', 'Examples'])
+    if (!out.example && !out.examples) {
+      out.example =
+        firstCsharp(section(md, ['Options'])) ||
+        firstCsharp(md)
+    }
   } else {
     out.cause = cleanText(section(md, ['Cause']))
     const indexDesc = cleanText(out.description)
@@ -157,10 +200,12 @@ async function enrich(rule) {
       sectionDesc && sectionDesc.length > (indexDesc?.length ?? 0) ? sectionDesc : indexDesc
     out.howToFix = cleanText(section(md, ['How to fix violations']))
     out.whenToSuppress = cleanText(section(md, ['When to suppress warnings', 'When to suppress errors']))
-    out.example =
-      firstCsharp(section(md, ['Example', 'Examples', 'Example 1', 'Pseudo-code examples'])) ||
-      firstCsharp(section(md, ['How to fix violations'])) ||
-      firstCsharp(md)
+    applyExamples(out, md, ['Example', 'Examples', 'Example 1', 'Pseudo-code examples'])
+    if (!out.example && !out.examples) {
+      out.example =
+        firstCsharp(section(md, ['How to fix violations'])) ||
+        firstCsharp(md)
+    }
   }
 
   // Final safety pass so no raw markdown/xref leaks into any text field.
