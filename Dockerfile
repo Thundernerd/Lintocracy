@@ -1,24 +1,19 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine AS build
+FROM node:22-bookworm-slim AS build
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci \
+  && npm install --no-save @libsql/linux-x64-gnu
 
 COPY . .
 RUN npm run build \
   && mkdir -p .output/server/node_modules/@libsql \
-  && if [ -d node_modules/@libsql/linux-x64-musl ]; then \
-       cp -r node_modules/@libsql/linux-x64-musl .output/server/node_modules/@libsql/; \
-     elif [ -d node_modules/@libsql/linux-x64-gnu ]; then \
-       cp -r node_modules/@libsql/linux-x64-gnu .output/server/node_modules/@libsql/; \
-     else \
-       echo "No libsql linux-x64 native binding found in node_modules" >&2; exit 1; \
-     fi
+  && cp -r node_modules/@libsql/linux-x64-gnu .output/server/node_modules/@libsql/
 
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
@@ -26,8 +21,8 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 --ingroup nodejs nuxtjs \
+RUN groupadd --system --gid 1001 nodejs \
+  && useradd --system --uid 1001 --gid nodejs nuxtjs \
   && mkdir -p /data \
   && chown nuxtjs:nodejs /data
 
