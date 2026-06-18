@@ -45,8 +45,8 @@ function cleanText(raw) {
   t = t.replace(/^\s*>\s?/gm, '')
   // Remove zone/moniker pivots, e.g. :::zone pivot="..." and :::zone-end.
   t = t.replace(/^\s*:::.*$/gm, '')
-  // <xref:System.Foo.Bar?displayProperty=...> -> Bar (tolerate a missing `>`).
-  t = t.replace(/<xref:([^>\s?]+)[^>\s]*>?/g, (_, id) => id.split('.').pop())
+  // <xref:System.Foo.Bar*?displayProperty=...> -> System.Foo.Bar (tolerate a missing `>`).
+  t = t.replace(/<xref:([^>]+)>?/gi, (_, raw) => raw.split('?')[0].replace(/\*+$/, ''))
   // Markdown links [text](url) -> text
   t = t.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
   // Image / include directives
@@ -139,7 +139,7 @@ function parseOptions(md) {
     for (const cols of rows) {
       const label = (cols[0] || '').replace(/\*/g, '').trim()
       const v = (cols[1] || '').replace(/`/g, '').trim()
-      const desc = (cols[2] || '').trim() || undefined
+      const desc = cleanText((cols[2] || '').trim()) || undefined
       if (/^Option name/i.test(label)) {
         name = v
         inValues = false
@@ -182,6 +182,10 @@ async function enrich(rule) {
   }
   const enabledKey = Object.keys(props).find((k) => /^Enabled by default/i.test(k))
   if (enabledKey) out.enabledByDefault = props[enabledKey]
+  if (props['Title']) {
+    out.title = props['Title'].replace(/`/g, '').trim()
+    out.summary = out.title
+  }
 
   if (rule.category === 'style') {
     out.description = cleanText(section(md, ['Overview'])) || out.description
@@ -209,6 +213,7 @@ async function enrich(rule) {
   }
 
   // Final safety pass so no raw markdown/xref leaks into any text field.
+  if (out.title) out.title = cleanText(out.title)
   out.summary = cleanText(out.summary) || out.summary
   if (out.description) out.description = cleanText(out.description)
 
