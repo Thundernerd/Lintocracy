@@ -1,19 +1,19 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-bookworm-slim AS build
+FROM --platform=linux/amd64 node:22-bookworm-slim AS build
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci \
-  && npm install --no-save @libsql/linux-x64-gnu
+RUN npm ci
 
 COPY . .
-RUN npm run build \
+RUN npm install --no-save @libsql/linux-x64-gnu \
+  && npm run build \
   && mkdir -p .output/server/node_modules/@libsql \
   && cp -r node_modules/@libsql/linux-x64-gnu .output/server/node_modules/@libsql/
 
-FROM node:22-bookworm-slim AS runner
+FROM --platform=linux/amd64 node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
