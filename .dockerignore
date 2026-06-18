@@ -1,0 +1,16 @@
+node_modules
+.nuxt
+.output
+.data
+.cache
+dist
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+code-analysis
+*.md
+.DS_Store
+.fleet
+.idea
