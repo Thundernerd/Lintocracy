@@ -12,10 +12,7 @@ export default defineNuxtConfig({
   },
   nitro: {
     externals: {
-      traceInclude: [
-        'node_modules/@libsql/linux-x64-gnu',
-        'node_modules/@libsql/linux-x64-musl',
-      ],
+      traceInclude: ['node_modules/@libsql/linux-x64-gnu'],
     },
   },
   app: {

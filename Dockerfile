@@ -4,14 +4,21 @@ FROM --platform=linux/amd64 node:22-bookworm-slim AS build
 
 WORKDIR /app
 
+# Keep devDependencies available for the Nuxt production build.
+ENV NODE_ENV=development
+
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --include=optional \
+  && npm install --no-save @libsql/linux-x64-gnu@0.5.29
 
 COPY . .
-RUN npm install --no-save @libsql/linux-x64-gnu \
-  && npm run build \
+RUN npm run build
+
+RUN set -eux \
+  && BINDING="$(find node_modules -path '*/@libsql/linux-x64-gnu' -type d | head -1)" \
+  && test -n "$BINDING" \
   && mkdir -p .output/server/node_modules/@libsql \
-  && cp -r node_modules/@libsql/linux-x64-gnu .output/server/node_modules/@libsql/
+  && cp -r "$BINDING" .output/server/node_modules/@libsql/linux-x64-gnu
 
 FROM --platform=linux/amd64 node:22-bookworm-slim AS runner
 
