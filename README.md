@@ -1,4 +1,4 @@
-# Rule Wars
+# Lintocracy
 
 Group voting on C# coding standards. Create a group, invite your teammates, browse Microsoft's official C# **code style**
 (`IDExxxx`) and **code quality** (`CAxxxx`) analyzer rules, vote on each, and generate a
@@ -62,6 +62,7 @@ server/
   db/                   # Drizzle schema + connection (schema is created on startup)
   utils/                # group/membership cookies, admin passwords, tallies
 shared/
+  constants/app.ts      # app name and default tab title
   constants/database.ts # SQLite file location
   types/                # shared types (Rule, Severity, RuleTally, groups, ...)
   utils/consensus.ts    # vote -> consensus computation (incl. tie-breaking)

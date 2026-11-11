@@ -12,7 +12,7 @@ const { data: group, error } = await useFetch<GroupSummary>(
   `/api/groups/by-invite/${token.value}`,
 )
 
-useHead(() => ({ title: group.value ? `Join ${group.value.name} — Rule Wars` : 'Join a group' }))
+useHead(() => ({ title: group.value ? `Join ${group.value.name}` : 'Join a group' }))
 
 const name = ref('')
 const busy = ref(false)
