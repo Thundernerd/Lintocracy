@@ -1,0 +1,60 @@
+import { describe, expect, it } from 'vitest'
+import { renderProse } from './prose'
+
+describe('renderProse', () => {
+  it('renders a pipe table with a separator row as a table with a header row', () => {
+    const input = [
+      'Rule names should not end in these suffixes:',
+      '',
+      '| Suffix | Base type |',
+      '|----|----|',
+      '| Attribute | System.Attribute |',
+      '| Collection | System.Collections.ICollection |',
+    ].join('\n')
+
+    expect(renderProse(input)).toBe(
+      '<p>Rule names should not end in these suffixes:</p>' +
+        '<table>' +
+        '<thead><tr><th>Suffix</th><th>Base type</th></tr></thead>' +
+        '<tbody>' +
+        '<tr><td>Attribute</td><td>System.Attribute</td></tr>' +
+        '<tr><td>Collection</td><td>System.Collections.ICollection</td></tr>' +
+        '</tbody>' +
+        '</table>',
+    )
+  })
+
+  it('turns <br/> inside a table cell into a line break', () => {
+    const input = [
+      '| Suffix | Base type |',
+      '|----|----|',
+      '| Collection | System.Collections.ICollection<br/><br/>System.Data.DataSet |',
+    ].join('\n')
+
+    expect(renderProse(input)).toContain(
+      '<td>System.Collections.ICollection<br><br>System.Data.DataSet</td>',
+    )
+  })
+
+  it('renders inline code in a table cell', () => {
+    const input = [
+      '| Overload | Suggested fix |',
+      '| -------- | ------------- |',
+      '| `String.IndexOf(char)` | `String.Contains(char)` |',
+    ].join('\n')
+
+    expect(renderProse(input)).toContain(
+      '<tr><td><code>String.IndexOf(char)</code></td><td><code>String.Contains(char)</code></td></tr>',
+    )
+  })
+
+  it('keeps lines with a stray | as paragraph text when there is no separator row', () => {
+    const input = ['Combine flags with a | b.', '| not a table |', 'Still the same paragraph.'].join(
+      '\n',
+    )
+
+    expect(renderProse(input)).toBe(
+      '<p>Combine flags with a | b. | not a table | Still the same paragraph.</p>',
+    )
+  })
+})

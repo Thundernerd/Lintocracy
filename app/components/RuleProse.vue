@@ -26,6 +26,32 @@ const html = computed(() =>
   flex-direction: column;
   gap: 0.25rem;
 }
+/* Block display lets a wide table scroll sideways inside itself, not the page. */
+.rule-prose :deep(table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+.rule-prose :deep(table:last-child) {
+  margin-bottom: 0;
+}
+.rule-prose :deep(th),
+.rule-prose :deep(td) {
+  border: 1px solid var(--ui-border);
+  padding: 0.375rem 0.625rem;
+  text-align: left;
+  vertical-align: top;
+  min-width: 6rem;
+  overflow-wrap: break-word;
+}
+.rule-prose :deep(th) {
+  background: var(--ui-bg-elevated);
+  color: var(--ui-text-highlighted);
+  font-weight: 600;
+}
 .rule-prose :deep(code) {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;

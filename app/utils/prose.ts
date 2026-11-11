@@ -33,9 +33,40 @@ export function renderInlineProse(input?: string): string {
   )
 }
 
+/** A pipe-table row: starts with `|` (the docs always write the outer pipes). */
+const isTableRow = (line: string) => line.startsWith('|')
+
+/** The `|---|:--:|` line under a table's header row. */
+const isTableSeparator = (line: string) => /^\|(\s*:?-+:?\s*\|)+$/.test(line)
+
+/** Splits `| a | b |` into its trimmed cells. */
+const tableCells = (line: string) =>
+  line
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim())
+
+/** Renders a cell's inline markup; the docs write line breaks in cells as `<br/>`. */
+const renderCell = (cell: string) =>
+  cell
+    .split(/<br\s*\/?>/i)
+    .map((part) => renderInlineProse(part))
+    .join('<br>')
+
+function renderTable(header: string, rows: string[]): string {
+  const cells = (line: string, tag: 'th' | 'td') =>
+    tableCells(line)
+      .map((cell) => `<${tag}>${renderCell(cell)}</${tag}>`)
+      .join('')
+  const body = rows.map((row) => `<tr>${cells(row, 'td')}</tr>`).join('')
+  return `<table><thead><tr>${cells(header, 'th')}</tr></thead><tbody>${body}</tbody></table>`
+}
+
 /**
- * Renders the lightly-cleaned docs text (plain text with inline markup and
- * `- ` / `* ` bullet lists) into safe HTML. Source is the trusted local docs clone.
+ * Renders the lightly-cleaned docs text (plain text with inline markup,
+ * `- ` / `* ` bullet lists and pipe tables) into safe HTML. Source is the
+ * trusted local docs clone.
  */
 export function renderProse(input?: string): string {
   if (!input) return ''
@@ -57,9 +88,18 @@ export function renderProse(input?: string): string {
     }
   }
 
-  for (const raw of input.split('\n')) {
-    const line = raw.trim()
-    if (/^[-*]\s+/.test(line)) {
+  const lines = input.split('\n').map((raw) => raw.trim())
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    if (isTableRow(line) && isTableSeparator(lines[i + 1] ?? '')) {
+      flushPara()
+      flushList()
+      const rows: string[] = []
+      i += 2
+      while (i < lines.length && isTableRow(lines[i]!)) rows.push(lines[i++]!)
+      i--
+      out.push(renderTable(line, rows))
+    } else if (/^[-*]\s+/.test(line)) {
       flushPara()
       list.push(line.replace(/^[-*]\s+/, ''))
     } else if (line === '') {
