@@ -66,12 +66,19 @@ const stats = computed(() => {
   }
 })
 
+// One timestamp shared by the server render and client hydration, so the
+// `# Generated` line in the preview (and Copy/Download) doesn't mismatch.
+const generatedAt = useState('editorconfig-generated-at', () => new Date().toISOString())
+// Drop it on leave so a later client-side visit stamps a fresh time.
+onUnmounted(() => clearNuxtState('editorconfig-generated-at'))
+
 const editorConfig = computed(() => {
   if (!rules.value) return ''
   return generateEditorConfig(rules.value, effectiveTallies.value, {
     includeUnvoted: includeUnvoted.value,
     useMsDefaults: useMsDefaults.value,
     optionTallies: Object.values(optionTallies.value),
+    generatedAt: generatedAt.value,
   })
 })
 
