@@ -80,19 +80,15 @@ export function parseOptions(md) {
     let defaultValue
     const values = []
     let inValues = false
-    // A prose cell means the option takes values the docs cannot enumerate.
-    let freeForm = false
 
     for (const cols of rows) {
       const label = (cols[0] || '').replace(/\*/g, '').trim()
       const cell = (cols[1] || '').trim()
       const v = cell.replace(/`/g, '').trim()
       const desc = cleanText((cols[2] || '').trim()) || undefined
-      // A literal cell becomes an enumerated value; a prose cell marks the option free-form.
+      // Only literal cells are values; a prose cell describes values and is dropped.
       const collectValueCell = () => {
-        if (!v) return
-        if (isLiteralValueCell(cell)) values.push({ value: v, description: desc })
-        else freeForm = true
+        if (v && isLiteralValueCell(cell)) values.push({ value: v, description: desc })
       }
       if (/^Option name/i.test(label)) {
         name = v
@@ -110,11 +106,9 @@ export function parseOptions(md) {
       }
     }
 
-    // `values: undefined` is how the app models a free-form option: the API then
-    // accepts any value and the UI asks for one instead of listing choices.
-    if (name) {
-      options.push({ name, defaultValue, values: values.length && !freeForm ? values : undefined })
-    }
+    // With no literal left, `values: undefined` makes the option free-form:
+    // the API then accepts any value instead of checking it against a list.
+    if (name) options.push({ name, defaultValue, values: values.length ? values : undefined })
   }
 
   return options.length ? options : undefined

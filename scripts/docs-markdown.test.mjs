@@ -30,17 +30,27 @@ test('an Options table whose "Option values" cell is a description yields a free
   ])
 })
 
-test('an option that lists literal values beside a described value is free-form', () => {
+test('a described value beside literal values is dropped and the literals are kept', () => {
   const md = optionsPage({
-    name: 'file_header_template',
+    name: 'dotnet_remove_unnecessary_suppression_exclusions',
     rows: [
-      '| **Option values** | `unset` | Do not require a file header. |',
-      '|  | non-empty string, optionally containing a `{fileName}` placeholder | Prefer the string as the required file header. |',
-      '| **Default option value** | `unset` |  |',
+      '| **Option values** | Comma-separated list of rule IDs or categories (prefixed with `category:`) | Excludes suppressions for the listed rules or categories |',
+      '|  | `all` | Disables the rule (all rule IDs excluded) |',
+      '|  | `none` | Enables the rule for all rules (no exclusions) |',
+      '| **Default option value** | `none` |  |',
     ],
   })
 
-  assert.deepEqual(parseOptions(md), [{ name: 'file_header_template', defaultValue: 'unset', values: undefined }])
+  assert.deepEqual(parseOptions(md), [
+    {
+      name: 'dotnet_remove_unnecessary_suppression_exclusions',
+      defaultValue: 'none',
+      values: [
+        { value: 'all', description: 'Disables the rule (all rule IDs excluded)' },
+        { value: 'none', description: 'Enables the rule for all rules (no exclusions)' },
+      ],
+    },
+  ])
 })
 
 test('an option whose values are all literals keeps them as enumerated values', () => {
