@@ -14,7 +14,6 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Lintocracy — Vote on C# coding standards',
       meta: [
         {
           name: 'description',

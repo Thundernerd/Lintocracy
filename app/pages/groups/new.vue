@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useHead({ title: 'Create a group — Lintocracy' })
+useHead({ title: 'Create a group' })
 
 const { createGroup } = useGroup()
 const toast = useToast()

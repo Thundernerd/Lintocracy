@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { APP_NAME } from '#shared/constants/app'
+
 const links = [
   { label: 'Rules', to: '/rules', icon: 'i-lucide-list-checks' },
   { label: 'Results', to: '/results', icon: 'i-lucide-bar-chart-3' },
@@ -55,7 +57,7 @@ const isDark = computed({
       <UContainer class="flex items-center justify-between gap-4 h-16">
         <NuxtLink to="/" class="flex items-center gap-2 font-bold text-lg">
           <UIcon name="i-lucide-vote" class="text-primary size-6" />
-          <span>Lintocracy</span>
+          <span>{{ APP_NAME }}</span>
         </NuxtLink>
 
         <nav class="hidden sm:flex items-center gap-1">
@@ -113,7 +115,7 @@ const isDark = computed({
       <UContainer
         class="py-6 text-sm text-muted flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left"
       >
-        <span>Lintocracy — team voting on C# coding standards.</span>
+        <span>{{ APP_NAME }} — team voting on C# coding standards.</span>
         <span>
           Idea by the one and only amazing
           <a
