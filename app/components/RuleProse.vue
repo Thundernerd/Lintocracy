@@ -1,10 +1,14 @@
 <script setup lang="ts">
-const props = defineProps<{ text?: string }>()
-const html = computed(() => renderProse(props.text))
+/** `inline` renders a single line (no `<p>`/`<ul>` blocks) inside a `<span>`. */
+const props = defineProps<{ text?: string; inline?: boolean }>()
+const html = computed(() =>
+  props.inline ? renderInlineProse(props.text) : renderProse(props.text),
+)
 </script>
 
 <template>
-  <div class="rule-prose text-muted" v-html="html" />
+  <span v-if="inline" class="rule-prose text-muted" v-html="html" />
+  <div v-else class="rule-prose text-muted" v-html="html" />
 </template>
 
 <style scoped>
