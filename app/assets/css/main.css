@@ -1,2 +1,52 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/*
+ * Editorial visual style (issue #5, chosen in #1): serif headings, warm stone neutrals,
+ * a muted teal accent, a larger radius and a little more whitespace.
+ */
+
+@theme {
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  /* Slightly roomier than Tailwind's 0.25rem; scales every spacing and size utility. */
+  --spacing: 0.28rem;
+}
+
+/*
+ * The rules below are unlayered on purpose: they must beat the values Nuxt UI sets inside
+ * `@layer theme`, including the `--ui-primary` its colour plugin injects, and the pages'
+ * `font-bold` on headings.
+ */
+:root {
+  --ui-radius: 0.5rem;
+  --ui-bg: var(--ui-color-neutral-50);
+  --ui-bg-muted: var(--ui-color-neutral-100);
+  --ui-text: var(--ui-color-neutral-800);
+  /* Muted accent: a deeper shade of the primary in light mode, softer in dark. */
+  --ui-primary: var(--ui-color-primary-700);
+}
+
+/*
+ * The first three values repeat Nuxt UI's own dark defaults, but they are still needed: without
+ * them the unlayered :root values above would beat Nuxt UI's layered .dark rule in dark mode.
+ */
+.dark {
+  --ui-bg: var(--ui-color-neutral-900);
+  --ui-bg-muted: var(--ui-color-neutral-800);
+  --ui-text: var(--ui-color-neutral-200);
+  --ui-primary: var(--ui-color-primary-500);
+}
+
+body {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
