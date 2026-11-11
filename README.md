@@ -1,4 +1,4 @@
-# Rule Wars
+# Lintocracy
 
 Group voting on C# coding standards. Create a group, invite your teammates, browse Microsoft's official C# **code style**
 (`IDExxxx`) and **code quality** (`CAxxxx`) analyzer rules, vote on each, and generate a

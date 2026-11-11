@@ -9,10 +9,10 @@ const severities = [
 
 <template>
   <UContainer class="py-10 max-w-3xl">
-    <h1>About Rule Wars</h1>
+    <h1>About Lintocracy</h1>
     <div class="mt-4">
       <p class="text-muted">
-        Rule Wars is a team tool for deciding which of Microsoft's official C#
+        Lintocracy is a team tool for deciding which of Microsoft's official C#
         analyzer rules to enable, and at what severity. Create a group, invite your
         teammates with a link, and vote together. Vote <strong>Yes</strong> on a rule
         to enable it and choose a severity, or <strong>No</strong> to leave it off

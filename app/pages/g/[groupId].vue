@@ -12,7 +12,7 @@ onMounted(async () => {
   await loadVotes(true)
 })
 
-useHead(() => ({ title: group.value ? `${group.value.name} — Rule Wars` : 'Group' }))
+useHead(() => ({ title: group.value ? `${group.value.name} — Lintocracy` : 'Group' }))
 
 const inviteUrl = computed(() => {
   if (!group.value?.inviteToken || !import.meta.client) return ''

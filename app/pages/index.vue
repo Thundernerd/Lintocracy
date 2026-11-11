@@ -36,7 +36,7 @@ const features = [
         Vote on C# coding standards, together.
       </h1>
       <p class="mt-6 text-lg text-muted max-w-2xl mx-auto">
-        Rule Wars lets your team vote on Microsoft's official C# code style and code
+        Lintocracy lets your team vote on Microsoft's official C# code style and code
         quality rules, then turns the consensus into a shareable
         <code class="text-primary">.editorconfig</code>.
       </p>
