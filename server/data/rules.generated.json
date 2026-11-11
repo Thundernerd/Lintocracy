@@ -995,7 +995,7 @@
     },
     "enabledByDefault": "No",
     "cause": "A call is made to a method that has an overload that accepts a System.IFormatProvider argument, and that overload isn't called.\n\nThis rule ignores calls to .NET methods that are documented as ignoring the System.IFormatProvider parameter. The rule also ignores the following methods:\n\n- System.Activator.CreateInstance\n- System.Resources.ResourceManager.GetObject\n- System.Resources.ResourceManager.GetString\n- System.Boolean.ToString\n- System.Char.ToString\n- System.Guid.ToString",
-    "howToFix": "To fix a violation of this rule, use the overload that takes an System.IFormatProvider argument. Or, to use the invariant culture, use a C# interpolated string and pass it to System.String.Create(System.IFormatProvider,System.Runtime.CompilerServices.DefaultInterpolatedStringHandler@) along with System.Globalization.CultureInfo.InvariantCulture, for example:",
+    "howToFix": "To fix a violation of this rule, use the overload that takes an System.IFormatProvider argument. Or, to use the invariant culture, use a C# interpolated string and pass it to System.String.Create(System.IFormatProvider,System.Runtime.CompilerServices.DefaultInterpolatedStringHandler) along with System.Globalization.CultureInfo.InvariantCulture, for example:",
     "whenToSuppress": "It is safe to suppress a warning from this rule when it is certain that the default format is the correct choice, and where code maintainability is not an important development priority.",
     "example": "string name = \"Georgette\";\n\n// Violates CA1305\nstring example1 = string.Format(\"Hello {0}\", name);\n\n// Satisfies CA1305\nstring example2 = string.Format(CultureInfo.CurrentCulture, \"Hello {0}\", name);\n\n// Satisfies CA1305\nstring example3 = string.Create(CultureInfo.InvariantCulture, $\"Hello {name}\");"
   },
@@ -2483,7 +2483,7 @@
       "diagnosticId": "CA1844"
     },
     "enabledByDefault": "As suggestion",
-    "cause": "A type derived from System.IO.Stream overrides System.IO.Stream.ReadAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken) but does not override System.IO.Stream.ReadAsync(System.Memory{System.Byte},System.Threading.CancellationToken). Or, a type derived from System.IO.Stream overrides  System.IO.Stream.WriteAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken) but does not override System.IO.Stream.WriteAsync(System.ReadOnlyMemory{System.Byte},System.Threading.CancellationToken).",
+    "cause": "A type derived from System.IO.Stream overrides System.IO.Stream.ReadAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken) but does not override System.IO.Stream.ReadAsync(System.Memory<System.Byte>,System.Threading.CancellationToken). Or, a type derived from System.IO.Stream overrides  System.IO.Stream.WriteAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken) but does not override System.IO.Stream.WriteAsync(System.ReadOnlyMemory<System.Byte>,System.Threading.CancellationToken).",
     "howToFix": "The easiest way to fix violations is to rewrite your array-based implementation as a memory-based implementation, and then implement the array-based methods in terms of the memory-based methods.",
     "whenToSuppress": "It's safe to suppress a warning from this rule if any of the following situations apply:\n\n- The performance hit is not a concern.\n- You know that your `Stream` subclass will only ever use the array-based methods.\n- Your `Stream` subclass has dependencies that don't support memory-based buffers.",
     "example": "#pragma warning disable CA1844\n// The code that's violating the rule is on this line.\n#pragma warning restore CA1844"
@@ -2851,10 +2851,10 @@
   },
   {
     "id": "CA1864",
-    "title": "Prefer the 'IDictionary.TryAdd(TKey, TValue)' method",
+    "title": "Prefer the 'Dictionary.TryAdd(TKey, TValue)' method",
     "category": "quality",
     "group": "Performance",
-    "summary": "Prefer the 'IDictionary.TryAdd(TKey, TValue)' method",
+    "summary": "Prefer the 'Dictionary.TryAdd(TKey, TValue)' method",
     "description": "Both System.Collections.Generic.Dictionary<T1,T2>.ContainsKey(T1) and System.Collections.Generic.Dictionary<T1,T2>.Add perform a lookup, which is redundant. System.Collections.Generic.Dictionary<T1,T2>.Add also throws an exception if the key is already present in the dictionary. It's more efficient to call System.Collections.Generic.Dictionary<T1,T2>.TryAdd, which returns a Boolean value that indicates if the value was added or not. `TryAdd` doesn't overwrite the key's value if the key is already present.",
     "docsUrl": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864",
     "defaultSeverity": "warning",
@@ -3597,7 +3597,7 @@
     },
     "enabledByDefault": "As suggestion",
     "cause": "When a method has a parameter, and it throws an exception type that is, or derives from, System.ArgumentException, it is expected to call a constructor accepting a `paramName` parameter correctly. Possible causes include the following situations:\n\n- A call is made to the default (parameterless) constructor of an exception type that is, or derives from, System.ArgumentException that also has a constructor that accepts a `paramName` parameter.\n- An incorrect string argument is passed to a parameterized constructor of an exception type that is, or derives from, System.ArgumentException. For example, the `paramName` argument doesn't match the name of one of the method's parameters.\n- A parameter name is passed for the `message` argument of the constructor of an exception type that is, or derives from, System.ArgumentException.",
-    "howToFix": "To fix a violation of this rule, call a constructor that takes a message, a parameter name, or both, and make sure the arguments are proper for the type of System.ArgumentException being called.\nA code fix is available in Visual Studio for incorrectly positioned parameter names. To use it, position the cursor on the warning row and press <kbd>Ctrl</kbd>+<kbd>.</kbd> (period). Choose **Swap the arguments order** from the list of options that's presented.\n!Code fix for CA2208 - swap arguments.\nIf a parameter name instead of a message is passed to the System.ArgumentException.%23ctor(System.String) method, the fixer provides the option to switch to the two-argument constructor instead.\n!Code fix for CA2208 - switch to two-argument constructor.",
+    "howToFix": "To fix a violation of this rule, call a constructor that takes a message, a parameter name, or both, and make sure the arguments are proper for the type of System.ArgumentException being called.\nA code fix is available in Visual Studio for incorrectly positioned parameter names. To use it, position the cursor on the warning row and press <kbd>Ctrl</kbd>+<kbd>.</kbd> (period). Choose **Swap the arguments order** from the list of options that's presented.\n!Code fix for CA2208 - swap arguments.\nIf a parameter name instead of a message is passed to the System.ArgumentException.#ctor(System.String) method, the fixer provides the option to switch to the two-argument constructor instead.\n!Code fix for CA2208 - switch to two-argument constructor.",
     "whenToSuppress": "It's safe to suppress a warning from this rule only if a parameterized constructor is called with the correct string arguments.",
     "example": "#pragma warning disable CA2208\n// The code that's violating the rule is on this line.\n#pragma warning restore CA2208"
   },
@@ -4857,7 +4857,7 @@
     "cause": "Potentially untrusted HTTP request input reaches an SQL command's text.\n\nBy default, this rule analyzes the entire codebase, but this is configurable.",
     "howToFix": "Use parameterized SQL commands, or stored procedures, with parameters containing the untrusted input.",
     "whenToSuppress": "It's safe to suppress a warning from this rule if you know that the input is always validated against a known safe set of characters.",
-    "example": "using System;\nusing System.Data;\nusing System.Data.SqlClient;\n\nnamespace TestNamespace\n{\n    public partial class WebForm : System.Web.UI.Page\n    {\n        public static string ConnectionString { get; set; }\n\n        protected void Page_Load(object sender, EventArgs e)\n        {\n            string name = Request.Form[\"product_name\"];\n            using (SqlConnection connection = new SqlConnection(ConnectionString))\n            {\n                SqlCommand sqlCommand = new SqlCommand()\n                {\n                    CommandText = \"SELECT ProductId FROM Products WHERE ProductName = '\" + name + \"'\",\n                    CommandType = CommandType.Text,\n                };\n\n                SqlDataReader reader = sqlCommand.ExecuteReader();\n            }\n        }\n    }\n}\n\nusing System;\nusing System.Data;\nusing System.Data.SqlClient;\n\nnamespace TestNamespace\n{\n    public partial class WebForm : System.Web.UI.Page\n    {\n        public static string ConnectionString { get; set; }\n\n        protected void Page_Load(object sender, EventArgs e)\n        {\n            string name = Request.Form[\"product_name\"];\n            using (SqlConnection connection = new SqlConnection(ConnectionString))\n            {\n                SqlCommand sqlCommand = new SqlCommand()\n                {\n                    CommandText = \"SELECT ProductId FROM Products WHERE ProductName = @productName\",\n                    CommandType = CommandType.Text,\n                };\n\n                sqlCommand.Parameters.Add(\"@productName\", SqlDbType.NVarChar, 128).Value = name;\n\n                SqlDataReader reader = sqlCommand.ExecuteReader();\n            }\n        }\n    }\n}\n\nusing System;\nusing System.Data;\nusing System.Data.SqlClient;\n\nnamespace TestNamespace\n{\n    public partial class WebForm : System.Web.UI.Page\n    {\n        public static string ConnectionString { get; set; }\n\n        protected void Page_Load(object sender, EventArgs e)\n        {\n            string name = Request.Form[\"product_name\"];\n            using (SqlConnection connection = new SqlConnection(ConnectionString))\n            {\n                SqlCommand sqlCommand = new SqlCommand()\n                {\n                    CommandText = \"sp_GetProductIdFromName\",\n                    CommandType = CommandType.StoredProcedure,\n                };\n\n                sqlCommand.Parameters.Add(\"@productName\", SqlDbType.NVarChar, 128).Value = name;\n\n                SqlDataReader reader = sqlCommand.ExecuteReader();\n            }\n        }\n    }\n}"
+    "example": "using System;\nusing System.Data;\nusing Microsoft.Data.SqlClient;\n\nnamespace TestNamespace\n{\n    public partial class WebForm : System.Web.UI.Page\n    {\n        public static string ConnectionString { get; set; }\n\n        protected void Page_Load(object sender, EventArgs e)\n        {\n            string name = Request.Form[\"product_name\"];\n            using (SqlConnection connection = new SqlConnection(ConnectionString))\n            {\n                SqlCommand sqlCommand = new SqlCommand()\n                {\n                    CommandText = \"SELECT ProductId FROM Products WHERE ProductName = '\" + name + \"'\",\n                    CommandType = CommandType.Text,\n                };\n\n                SqlDataReader reader = sqlCommand.ExecuteReader();\n            }\n        }\n    }\n}\n\nusing System;\nusing System.Data;\nusing Microsoft.Data.SqlClient;\n\nnamespace TestNamespace\n{\n    public partial class WebForm : System.Web.UI.Page\n    {\n        public static string ConnectionString { get; set; }\n\n        protected void Page_Load(object sender, EventArgs e)\n        {\n            string name = Request.Form[\"product_name\"];\n            using (SqlConnection connection = new SqlConnection(ConnectionString))\n            {\n                SqlCommand sqlCommand = new SqlCommand()\n                {\n                    CommandText = \"SELECT ProductId FROM Products WHERE ProductName = @productName\",\n                    CommandType = CommandType.Text,\n                };\n\n                sqlCommand.Parameters.Add(\"@productName\", SqlDbType.NVarChar, 128).Value = name;\n\n                SqlDataReader reader = sqlCommand.ExecuteReader();\n            }\n        }\n    }\n}\n\nusing System;\nusing System.Data;\nusing Microsoft.Data.SqlClient;\n\nnamespace TestNamespace\n{\n    public partial class WebForm : System.Web.UI.Page\n    {\n        public static string ConnectionString { get; set; }\n\n        protected void Page_Load(object sender, EventArgs e)\n        {\n            string name = Request.Form[\"product_name\"];\n            using (SqlConnection connection = new SqlConnection(ConnectionString))\n            {\n                SqlCommand sqlCommand = new SqlCommand()\n                {\n                    CommandText = \"sp_GetProductIdFromName\",\n                    CommandType = CommandType.StoredProcedure,\n                };\n\n                sqlCommand.Parameters.Add(\"@productName\", SqlDbType.NVarChar, 128).Value = name;\n\n                SqlDataReader reader = sqlCommand.ExecuteReader();\n            }\n        }\n    }\n}"
   },
   {
     "id": "CA3002",
@@ -5290,10 +5290,10 @@
       "diagnosticId": "CA5362"
     },
     "enabledByDefault": "No",
-    "cause": "A class marked with the System.SerializableAttribute has a field or property may refer to the containing object directly or indirectly, allowing for a potential reference cycle.",
+    "cause": "A class marked with the System.SerializableAttribute has a field or property that might refer to the containing object directly or indirectly, allowing for a potential reference cycle.",
     "howToFix": "Don't serialize the class and remove the System.SerializableAttribute. Or, redesign your application so that the self-referred members can be removed out of the serializable class.",
     "whenToSuppress": "It's safe to suppress a warning from this rule if:\n\n- You know the input is trusted. Consider that your application's trust boundary and data flows may change over time.\n- All code processing the deserialized data detects and handles reference cycles without going into an infinite loop or using excessive resources.",
-    "example": "using System;\n\n[Serializable()]\nclass ExampleClass\n{\n    public ExampleClass ExampleProperty {get; set;}\n\n    public int NormalProperty {get; set;}\n}\n\nclass AnotherClass\n{\n    // The argument passed by could be `JsonConvert.DeserializeObject<ExampleClass>(untrustedData)`.\n    public void AnotherMethod(ExampleClass ec)\n    {\n        while(ec != null)\n        {\n            Console.WriteLine(ec.ToString());\n            ec = ec.ExampleProperty;\n        }\n    }\n}\n\nusing System;\n\n[Serializable()]\nclass ExampleClass\n{\n    [NonSerialized]\n    public ExampleClass ExampleProperty {get; set;}\n\n    public int NormalProperty {get; set;}\n}\n\nclass AnotherClass\n{\n    // The argument passed by could be `JsonConvert.DeserializeObject<ExampleClass>(untrustedData)`.\n    public void AnotherMethod(ExampleClass ec)\n    {\n        while(ec != null)\n        {\n            Console.WriteLine(ec.ToString());\n            ec = ec.ExampleProperty;\n        }\n    }\n}"
+    "example": "using System;\n\nnamespace ca5362\n{\n    [Serializable]\n    class ExampleClass\n    {\n        public ExampleClass ExampleField;\n\n        public int NormalProperty { get; set; }\n    }\n\n    class AnotherClass\n    {\n        // The argument passed in could be\n        // `JsonConvert.DeserializeObject<ExampleClass>(untrustedData)`.\n        public void AnotherMethod(ExampleClass ec)\n        {\n            while (ec != null)\n            {\n                Console.WriteLine(ec.ToString());\n                ec = ec.ExampleField;\n            }\n        }\n    }\n}"
   },
   {
     "id": "CA5363",
@@ -5443,7 +5443,7 @@
     },
     "enabledByDefault": "No",
     "cause": "Validating untrusted XML input with the `XmlValidatingReader` class instantiated without an `XmlReader` object can potentially lead to denial of service, information disclosure, and server-side request forgery. These attacks are enabled by untrusted DTD and XML schema processing, which allows for the inclusion of XML bombs and malicious external entities in the XML. Only with `XmlReader` is it possible to disable DTD. Inline XML schema processing as `XmlReader` has the `ProhibitDtd` and `ProcessInlineSchema` property set to `false` by default in .NET Framework starting in version 4.0.",
-    "howToFix": "- Use `XmlValidatingReader(XmlReader)` with `ProhibitDtd` and `ProcessInlineSchema` properties set to `false`.\n- Starting in .NET Framework 2.0, `XmlValidatingReader` is considered obsolete. You can instantiate a validating reader with System.Xml.XmlReader.Create.",
+    "howToFix": "- Use `XmlValidatingReader(XmlReader)` with `ProhibitDtd` and `ProcessInlineSchema` properties set to `false`.\n- `XmlValidatingReader` is considered obsolete. You can instantiate a validating reader with System.Xml.XmlReader.Create.",
     "whenToSuppress": "You can potentially suppress this warning if the `XmlValidatingReader` is always used to validate XML that comes from a trusted source and hence cannot be tampered with.",
     "example": "using System;\nusing System.IO;\nusing System.Xml;\n...\npublic void TestMethod(Stream xmlFragment, XmlNodeType fragType, XmlParserContext context)\n{\n    var obj = new XmlValidatingReader(xmlFragment, fragType, context);\n}\n\nusing System;\nusing System.Xml;\n...\npublic void TestMethod(XmlReader xmlReader)\n{\n    var obj = new XmlValidatingReader(xmlReader);\n}"
   },
@@ -7165,21 +7165,11 @@
     "options": [
       {
         "name": "csharp_preferred_modifier_order",
-        "defaultValue": "public, private, protected, internal, file, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, required, volatile, async",
-        "values": [
-          {
-            "value": "One or more C# modifiers, such as public, private, and protected"
-          }
-        ]
+        "defaultValue": "public, private, protected, internal, file, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, required, volatile, async"
       },
       {
         "name": "visual_basic_preferred_modifier_order",
-        "defaultValue": "Partial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async",
-        "values": [
-          {
-            "value": "One or more Visual Basic modifiers, such as Partial, Private, and Public"
-          }
-        ]
+        "defaultValue": "Partial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async"
       }
     ],
     "example": "// csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async\nclass MyClass\n{\n    private static readonly int _daysInYear = 365;\n}"
@@ -8276,17 +8266,7 @@
     "options": [
       {
         "name": "file_header_template",
-        "defaultValue": "unset",
-        "values": [
-          {
-            "value": "non-empty string, optionally containing a {fileName} placeholder",
-            "description": "Prefer the string as the required file header."
-          },
-          {
-            "value": "unset or empty string",
-            "description": "Do not require a file header."
-          }
-        ]
+        "defaultValue": "unset"
       }
     ],
     "example": "// file_header_template = Copyright (c) SomeCorp. All rights reserved.\\nLicensed under the xyz license.\n\n// Copyright (c) SomeCorp. All rights reserved.\n// Licensed under the xyz license.\nnamespace N1\n{\n    class C1 { }\n}\n\n// file_header_template = unset\n//      OR\n// file_header_template =\nnamespace N2\n{\n    class C2 { }\n}"
@@ -8452,10 +8432,6 @@
         "name": "dotnet_remove_unnecessary_suppression_exclusions",
         "defaultValue": "none",
         "values": [
-          {
-            "value": "Comma-separated list of rule IDs or categories (prefixed with category:)",
-            "description": "Excludes suppressions for the listed rules or categories"
-          },
           {
             "value": "all",
             "description": "Disables the rule (all rule IDs excluded)"
@@ -9521,7 +9497,7 @@
         ]
       }
     ],
-    "example": "// Code with violations.\nstring name = nameof(List<int>);\n\n// Fixed code.\nstring name = nameof(List<>);"
+    "example": "// Code with violations.\nstring name = nameof(List<int>);\n\n// Fixed code.\nstring name = nameof(List<>);\n\n// Both operands produce the same string.\nbool sameName = nameof(List<int>) == nameof(List<>); // true"
   },
   {
     "id": "IDE0350",
