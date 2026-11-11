@@ -1,5 +1,5 @@
 // Parsers for the Microsoft docs markdown read by enrich-rules.mjs.
-import { decodeDocsText, formatXref } from './text.mjs'
+import { decodeDocsTextKeepingTablePipes, formatXref } from './text.mjs'
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -49,11 +49,12 @@ export function stripMarkdown(raw) {
 /**
  * Converts raw docs markdown to readable plain text, decoding entities and
  * backslash escapes (&#39;, &lt;, &mdash;, \<T\>) to literal characters.
+ * A pipe inside a table row stays escaped as `\|` so it is not read as a column break.
  * Decode exactly once: text that is already clean goes through stripMarkdown.
  */
 export function cleanText(raw) {
   const t = stripMarkdown(raw)
-  return t && (decodeDocsText(t) || undefined)
+  return t && (decodeDocsTextKeepingTablePipes(t) || undefined)
 }
 
 /**

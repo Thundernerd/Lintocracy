@@ -1,13 +1,16 @@
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/** Markdown escapes (`\*`, `\_`) become entities so the emphasis rules skip them. */
-const escapedChar: Record<string, string> = { '*': '&#42;', '_': '&#95;', '\\': '&#92;' }
+/**
+ * Markdown escapes (`\*`, `\_`) become entities so the emphasis rules skip them.
+ * `\|` is a table cell's literal pipe; outside a table it is just `|`.
+ */
+const escapedChar: Record<string, string> = { '*': '&#42;', '_': '&#95;', '\\': '&#92;', '|': '|' }
 
 /** Renders bold and emphasis in text whose code spans are already replaced by placeholders. */
 function renderEmphasis(s: string): string {
   return s
-    .replace(/\\([*_\\])/g, (_, c: string) => escapedChar[c]!)
+    .replace(/\\([*_\\|])/g, (_, c: string) => escapedChar[c]!)
     .replace(/\*\*(?!\s)([^*]+?)(?<!\s)\*\*/g, '<strong>$1</strong>')
     .replace(/(^|[^\w*])\*(?!\s)([^*]+?)(?<!\s)\*(?![\w*])/g, '$1<em>$2</em>')
     .replace(/(^|[^\w])_(?!\s)([^_]+?)(?<!\s)_(?!\w)/g, '$1<em>$2</em>')
@@ -33,9 +36,48 @@ export function renderInlineProse(input?: string): string {
   )
 }
 
+/** A pipe-table row: starts with `|` (the docs always write the outer pipes). */
+const isTableRow = (line: string) => line.startsWith('|')
+
+/** The `|---|:--:|` line under a table's header row. */
+const isTableSeparator = (line: string) => /^\|(\s*:?-+:?\s*\|)+$/.test(line)
+
+/** Splits `| a | b |` into its trimmed cells; `\|` is a literal pipe inside a cell. */
+const tableCells = (line: string) =>
+  line
+    .replace(/^\|/, '')
+    .replace(/(?<!\\)\|$/, '')
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replace(/\\\|/g, '|'))
+
+/** A header row followed by a separator row with the same number of columns. */
+const startsTable = (header: string, separator = '') =>
+  isTableRow(header) &&
+  isTableSeparator(separator) &&
+  tableCells(header).length === tableCells(separator).length
+
+/** Renders a cell's inline markup; the docs write line breaks in cells as `<br/>`. */
+const renderCell = (cell: string) =>
+  cell
+    .split(/<br\s*\/?>/i)
+    .map((part) => renderInlineProse(part))
+    .join('<br>')
+
+function renderTable(header: string, rows: string[]): string {
+  const width = tableCells(header).length
+  // Like GFM, a row is padded with empty cells or cut to the header's width.
+  const cells = (line: string, tag: 'th' | 'td') => {
+    const values = tableCells(line)
+    return Array.from({ length: width }, (_, i) => `<${tag}>${renderCell(values[i] ?? '')}</${tag}>`).join('')
+  }
+  const body = rows.map((row) => `<tr>${cells(row, 'td')}</tr>`).join('')
+  return `<table><thead><tr>${cells(header, 'th')}</tr></thead><tbody>${body}</tbody></table>`
+}
+
 /**
- * Renders the lightly-cleaned docs text (plain text with inline markup and
- * `- ` / `* ` bullet lists) into safe HTML. Source is the trusted local docs clone.
+ * Renders the lightly-cleaned docs text (plain text with inline markup,
+ * `- ` / `* ` bullet lists and pipe tables) into safe HTML. Source is the
+ * trusted local docs clone.
  */
 export function renderProse(input?: string): string {
   if (!input) return ''
@@ -57,9 +99,18 @@ export function renderProse(input?: string): string {
     }
   }
 
-  for (const raw of input.split('\n')) {
-    const line = raw.trim()
-    if (/^[-*]\s+/.test(line)) {
+  const lines = input.split('\n').map((raw) => raw.trim())
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    if (startsTable(line, lines[i + 1])) {
+      flushPara()
+      flushList()
+      // Body rows run from after the separator to the first non-table line.
+      let end = i + 2
+      while (end < lines.length && isTableRow(lines[end]!)) end++
+      out.push(renderTable(line, lines.slice(i + 2, end)))
+      i = end - 1
+    } else if (/^[-*]\s+/.test(line)) {
       flushPara()
       list.push(line.replace(/^[-*]\s+/, ''))
     } else if (line === '') {
