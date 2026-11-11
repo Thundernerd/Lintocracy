@@ -47,6 +47,12 @@ const tableCells = (line: string) =>
     .split(/(?<!\\)\|/)
     .map((cell) => cell.trim().replace(/\\\|/g, '|'))
 
+/** A header row followed by a separator row with the same number of columns. */
+const startsTable = (header: string, separator = '') =>
+  isTableRow(header) &&
+  isTableSeparator(separator) &&
+  tableCells(header).length === tableCells(separator).length
+
 /** Renders a cell's inline markup; the docs write line breaks in cells as `<br/>`. */
 const renderCell = (cell: string) =>
   cell
@@ -93,7 +99,7 @@ export function renderProse(input?: string): string {
   const lines = input.split('\n').map((raw) => raw.trim())
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!
-    if (isTableRow(line) && isTableSeparator(lines[i + 1] ?? '')) {
+    if (startsTable(line, lines[i + 1])) {
       flushPara()
       flushList()
       const rows: string[] = []

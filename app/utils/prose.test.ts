@@ -66,6 +66,12 @@ describe('renderProse', () => {
     )
   })
 
+  it('is not a table when the separator row has a different number of columns', () => {
+    const input = ['| A | B |', '|---|', '| 1 | 2 |'].join('\n')
+
+    expect(renderProse(input)).toBe('<p>| A | B | |---| | 1 | 2 |</p>')
+  })
+
   it('keeps lines with a stray | as paragraph text when there is no separator row', () => {
     const input = ['Combine flags with a | b.', '| not a table |', 'Still the same paragraph.'].join(
       '\n',
