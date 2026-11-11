@@ -41,7 +41,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/rule-wars
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/lintocracy
           tags: |
             type=ref,event=branch
             type=ref,event=tag

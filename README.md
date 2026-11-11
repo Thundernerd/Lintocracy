@@ -111,7 +111,7 @@ cp .env.example .env
 npm run dev
 ```
 
-App runs on `http://localhost:3000`. The SQLite database lives at `.data/rule-wars.db`;
+App runs on `http://localhost:3000`. The SQLite database lives at `.data/lintocracy.db`;
 its schema is created automatically on first run.
 
 ## Production
@@ -122,7 +122,7 @@ node .output/server/index.mjs   # or: npm run preview
 ```
 
 Set `NUXT_ADMIN_SECRET` to a long random value — it signs the group admin cookies. The
-database is the SQLite file at `.data/rule-wars.db`, so keep that directory on persistent storage.
+database is the SQLite file at `.data/lintocracy.db`, so keep that directory on persistent storage.
 
 ### Docker
 
@@ -134,7 +134,31 @@ ADMIN_SECRET=<long-random-string> docker compose up -d
 ```
 
 Compose passes `ADMIN_SECRET` to the app as `NUXT_ADMIN_SECRET`. Set `PORT` to serve on a
-port other than 3000. To build the image yourself instead: `docker build -t rule-wars .`
+port other than 3000. To build the image yourself instead: `docker build -t lintocracy .`
+
+### Upgrading from Rule Wars
+
+Lintocracy used to be called Rule Wars, and stored its database at `.data/rule-wars.db`.
+
+- **Local installs** need nothing: on startup the app renames `.data/rule-wars.db` (and its
+  `-wal`, `-shm` and `-journal` files) to `.data/lintocracy.db`, unless `lintocracy.db` already
+  exists, in which case the old file is left alone.
+- **Docker**: the image is now `tnrd/lintocracy` and the Compose volume is `lintocracy-data`.
+  A new volume starts empty, so copy the old one into it once, before the app first starts:
+
+  ```bash
+  docker compose down        # stop the old container
+  docker compose create      # pull the new image and create the new volume, without starting it
+  docker volume ls           # Compose prefixes volume names with the project name
+  docker run --rm -v <project>_rule-wars-data:/from -v <project>_lintocracy-data:/to alpine cp -a /from/. /to/
+  ADMIN_SECRET=<same-secret-as-before> docker compose up -d
+  ```
+
+  The project name is the directory holding `docker-compose.yml`, unless you set one. On
+  startup the app renames the database file inside the volume. If the new container already
+  ran before the copy, it created an empty `lintocracy.db` that wins over the copied
+  `rule-wars.db`: stop it, delete that empty `lintocracy.db` from the new volume, and start it again.
+  Remove the old volume once you have checked your groups are there.
 
 ## API
 
