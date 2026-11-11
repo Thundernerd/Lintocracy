@@ -29,9 +29,11 @@ function go(step: number) {
 
 function onKey(e: KeyboardEvent) {
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
+  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
   const el = document.activeElement as HTMLElement | null
   if (el?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return
+  // Leave arrows alone inside open menus, listboxes and other arrow-driven widgets.
+  if (el?.closest('[role="menu"], [role="listbox"], [role="tablist"], [role="radiogroup"], [role="slider"]')) return
   e.preventDefault()
   go(e.key === 'ArrowLeft' ? -1 : 1)
 }
