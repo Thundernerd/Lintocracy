@@ -9,7 +9,7 @@ const severities = [
 
 <template>
   <UContainer class="py-10 max-w-3xl">
-    <h1 class="text-2xl font-bold">About Rule Wars</h1>
+    <h1 class="text-2xl">About Rule Wars</h1>
     <div class="prose dark:prose-invert mt-4 max-w-none">
       <p class="text-muted">
         Rule Wars is a team tool for deciding which of Microsoft's official C#
@@ -20,14 +20,14 @@ const severities = [
         <code>.editorconfig</code>.
       </p>
 
-      <h2 class="text-lg font-semibold mt-8">Severity levels</h2>
+      <h2 class="text-lg mt-8">Severity levels</h2>
       <ul class="mt-2 space-y-2">
         <li v-for="s in severities" :key="s.name" class="text-muted">
           <code class="text-primary">{{ s.name }}</code> — {{ s.description }}
         </li>
       </ul>
 
-      <h2 class="text-lg font-semibold mt-8">Groups &amp; fairness</h2>
+      <h2 class="text-lg mt-8">Groups &amp; fairness</h2>
       <p class="text-muted">
         Each group is private: votes, results, and the generated
         <code>.editorconfig</code> are scoped to the group. You join by entering your

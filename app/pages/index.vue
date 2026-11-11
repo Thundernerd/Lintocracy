@@ -32,7 +32,7 @@ const features = [
       <UBadge variant="subtle" color="primary" class="mb-4">
         Team voting on C# standards
       </UBadge>
-      <h1 class="text-4xl sm:text-6xl font-bold tracking-tight max-w-3xl mx-auto">
+      <h1 class="text-4xl sm:text-6xl max-w-3xl mx-auto">
         Vote on C# coding standards, together.
       </h1>
       <p class="mt-6 text-lg text-muted max-w-2xl mx-auto">
@@ -93,7 +93,7 @@ const features = [
         <UCard v-for="feature in features" :key="feature.title">
           <div class="flex flex-col gap-3">
             <UIcon :name="feature.icon" class="size-8 text-primary" />
-            <h3 class="font-semibold text-lg">{{ feature.title }}</h3>
+            <h3 class="text-lg">{{ feature.title }}</h3>
             <p class="text-sm text-muted">{{ feature.description }}</p>
           </div>
         </UCard>

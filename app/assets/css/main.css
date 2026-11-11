@@ -14,9 +14,8 @@
 }
 
 /*
- * The rules below are unlayered on purpose: they must beat the values Nuxt UI sets inside
- * `@layer theme`, including the `--ui-primary` its colour plugin injects, and the pages'
- * `font-bold` on headings.
+ * The `:root` and `.dark` rules below are unlayered on purpose: they must beat the values
+ * Nuxt UI sets inside `@layer theme`, including the `--ui-primary` its colour plugin injects.
  */
 :root {
   --ui-radius: 0.5rem;
@@ -43,10 +42,16 @@ body {
   line-height: 1.65;
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+/*
+ * Editorial headings. Kept in `@layer base` so they are only a default: a `font-*` or
+ * `tracking-*` utility on a heading still overrides them.
+ */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
 }
