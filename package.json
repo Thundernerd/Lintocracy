@@ -9,7 +9,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "rules:generate": "node scripts/generate-rules.mjs",
-    "rules:enrich": "node scripts/enrich-rules.mjs"
+    "rules:enrich": "node scripts/enrich-rules.mjs",
+    "test": "vitest run",
+    "typecheck": "nuxi typecheck"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
@@ -26,6 +28,9 @@
     "@libsql/linux-x64-musl": "^0.5.29"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.113"
+    "@iconify-json/lucide": "^1.2.113",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0",
+    "vue-tsc": "^3.3.14"
   }
 }
