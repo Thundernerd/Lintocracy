@@ -61,7 +61,7 @@ useHead(() => ({ title: rule.value ? `${rule.value.id} — ${rule.value.title}` 
           </UBadge>
         </div>
         <h1>{{ rule.title }}</h1>
-        <p class="text-lg text-muted">{{ rule.summary }}</p>
+        <p class="text-lg text-muted"><RuleProse inline :text="rule.summary" /></p>
         <UButton
           :to="rule.docsUrl"
           target="_blank"

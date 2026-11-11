@@ -41,7 +41,7 @@ const props = defineProps<{ rule: Rule; tally?: RuleTally; hideGroup?: boolean }
           {{ rule.title }}
         </h3>
       </NuxtLink>
-      <p class="text-sm text-muted line-clamp-2">{{ rule.summary }}</p>
+      <p class="text-sm text-muted line-clamp-2"><RuleProse inline :text="rule.summary" /></p>
 
       <TallyBar :tally="tally" class="mt-auto" />
     </div>
