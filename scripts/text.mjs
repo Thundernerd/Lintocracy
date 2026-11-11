@@ -77,16 +77,18 @@ export function formatXref(target) {
   const name = parenIndex === -1 ? uid : uid.slice(0, parenIndex)
   const paramList = parenIndex === -1 ? '' : uid.slice(parenIndex)
 
-  // `N on a type, ``N on a method. Parameters refer to them by position as `i / ``i.
-  const typeArgs = []
+  // `N on a type, ``N on a method. Parameters refer to them by position as `i / ``i,
+  // where `i counts across the whole type chain (Outer`1.Inner`1 -> Outer<T1>.Inner<T2>).
+  const typeArity = [...name.matchAll(/(?<!`)`(\d+)/g)].reduce((n, m) => n + Number(m[1]), 0)
+  const typeArgs = genericParams(typeArity, 'T')
+  let nextTypeArg = 0
   let methodArgs = []
   const readableName = name.replace(/(`{1,2})(\d+)/g, (_, ticks, count) => {
     if (ticks.length === 2) {
-      methodArgs = genericParams(Number(count), typeArgs.length ? 'U' : 'T')
+      methodArgs = genericParams(Number(count), typeArity ? 'U' : 'T')
       return `<${methodArgs.join(',')}>`
     }
-    const args = genericParams(Number(count), 'T')
-    typeArgs.push(...args)
+    const args = typeArgs.slice(nextTypeArg, (nextTypeArg += Number(count)))
     return `<${args.join(',')}>`
   })
   const readableParamList = paramList
