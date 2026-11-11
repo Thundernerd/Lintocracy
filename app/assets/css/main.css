@@ -14,8 +14,8 @@
 }
 
 /*
- * The rules below are unlayered on purpose: they must beat the values Nuxt UI sets inside
- * `@layer theme`, including the `--ui-primary` its colour plugin injects.
+ * The `:root` and `.dark` rules below are unlayered on purpose: they must beat the values
+ * Nuxt UI sets inside `@layer theme`, including the `--ui-primary` its colour plugin injects.
  */
 :root {
   --ui-radius: 0.5rem;
