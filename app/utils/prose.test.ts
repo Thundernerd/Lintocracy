@@ -58,6 +58,14 @@ describe('renderProse', () => {
     expect(renderProse(input)).toContain('<tr><td>||</td><td>N/A</td><td>LogicalOr</td></tr>')
   })
 
+  it('pads short rows and drops extra cells so every row matches the header', () => {
+    const input = ['| A | B |', '|---|---|', '| only one |', '| 1 | 2 | 3 |'].join('\n')
+
+    expect(renderProse(input)).toContain(
+      '<tbody><tr><td>only one</td><td></td></tr><tr><td>1</td><td>2</td></tr></tbody>',
+    )
+  })
+
   it('keeps lines with a stray | as paragraph text when there is no separator row', () => {
     const input = ['Combine flags with a | b.', '| not a table |', 'Still the same paragraph.'].join(
       '\n',

@@ -55,10 +55,12 @@ const renderCell = (cell: string) =>
     .join('<br>')
 
 function renderTable(header: string, rows: string[]): string {
-  const cells = (line: string, tag: 'th' | 'td') =>
-    tableCells(line)
-      .map((cell) => `<${tag}>${renderCell(cell)}</${tag}>`)
-      .join('')
+  const width = tableCells(header).length
+  // Like GFM, a row is padded with empty cells or cut to the header's width.
+  const cells = (line: string, tag: 'th' | 'td') => {
+    const values = tableCells(line)
+    return Array.from({ length: width }, (_, i) => `<${tag}>${renderCell(values[i] ?? '')}</${tag}>`).join('')
+  }
   const body = rows.map((row) => `<tr>${cells(row, 'td')}</tr>`).join('')
   return `<table><thead><tr>${cells(header, 'th')}</tr></thead><tbody>${body}</tbody></table>`
 }
