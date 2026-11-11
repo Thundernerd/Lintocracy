@@ -111,7 +111,7 @@ const votedCount = computed(() => Object.keys(myVotes.value).length)
 <template>
   <UContainer class="py-10">
     <div class="flex flex-col gap-2 mb-6">
-      <h1 class="text-3xl">Rules</h1>
+      <h1>Rules</h1>
       <p v-if="hasGroup" class="text-muted">
         Voting in <strong>{{ activeGroup?.name ?? 'your group' }}</strong>. Vote
         <strong>Yes</strong> to enable a rule and pick a severity, or <strong>No</strong> to leave

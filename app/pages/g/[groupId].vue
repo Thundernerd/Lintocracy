@@ -105,7 +105,7 @@ async function doClear() {
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-users" class="size-6 text-primary" />
-            <h1 class="text-3xl">{{ group.name }}</h1>
+            <h1>{{ group.name }}</h1>
             <UBadge v-if="group.isAdmin" color="primary" variant="subtle">Admin</UBadge>
           </div>
           <p class="text-muted">

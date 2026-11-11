@@ -43,8 +43,8 @@ body {
 }
 
 /*
- * Editorial headings. Kept in `@layer base` so they are only a default: a `font-*` or
- * `tracking-*` utility on a heading still overrides them.
+ * Editorial headings. Kept in `@layer base` so they are only a default: a `font-*`, `tracking-*`
+ * or `text-*` utility on a heading still overrides them.
  */
 @layer base {
   h1,
@@ -53,5 +53,21 @@ body {
     font-family: var(--font-serif);
     font-weight: 600;
     letter-spacing: -0.01em;
+  }
+
+  /*
+   * Default sizes: h1 for page titles, h2/h3 for section and feature titles. Headings that
+   * Nuxt UI renders inside its components (e.g. the `UModal` title) carry `data-slot` and are
+   * left alone, since those components size their own titles.
+   */
+  h1:not([data-slot]) {
+    font-size: var(--text-3xl);
+    line-height: var(--text-3xl--line-height);
+  }
+
+  h2:not([data-slot]),
+  h3:not([data-slot]) {
+    font-size: var(--text-lg);
+    line-height: var(--text-lg--line-height);
   }
 }

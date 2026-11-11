@@ -60,7 +60,7 @@ useHead(() => ({ title: rule.value ? `${rule.value.id} — ${rule.value.title}` 
             MS default: {{ severityLabel[rule.defaultSeverity] }}
           </UBadge>
         </div>
-        <h1 class="text-3xl">{{ rule.title }}</h1>
+        <h1>{{ rule.title }}</h1>
         <p class="text-lg text-muted">{{ rule.summary }}</p>
         <UButton
           :to="rule.docsUrl"
@@ -104,27 +104,27 @@ useHead(() => ({ title: rule.value ? `${rule.value.id} — ${rule.value.title}` 
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 min-w-0 flex flex-col gap-6">
           <section v-if="rule.description">
-            <h2 class="text-lg mb-2">Description</h2>
+            <h2 class="mb-2">Description</h2>
             <RuleProse :text="rule.description" />
           </section>
 
           <section v-if="rule.cause">
-            <h2 class="text-lg mb-2">Cause</h2>
+            <h2 class="mb-2">Cause</h2>
             <RuleProse :text="rule.cause" />
           </section>
 
           <section v-if="rule.whyItMatters">
-            <h2 class="text-lg mb-2">Why it matters</h2>
+            <h2 class="mb-2">Why it matters</h2>
             <RuleProse :text="rule.whyItMatters" />
           </section>
 
           <section v-if="rule.howToFix">
-            <h2 class="text-lg mb-2">How to fix violations</h2>
+            <h2 class="mb-2">How to fix violations</h2>
             <RuleProse :text="rule.howToFix" />
           </section>
 
           <section v-if="rule.examples?.bad || rule.examples?.good" class="flex flex-col gap-4">
-            <h2 class="text-lg">Examples</h2>
+            <h2>Examples</h2>
             <div v-if="rule.examples?.bad">
               <div class="flex items-center gap-2 text-sm text-error mb-1">
                 <UIcon name="i-lucide-x-circle" /> Avoid
@@ -140,13 +140,13 @@ useHead(() => ({ title: rule.value ? `${rule.value.id} — ${rule.value.title}` 
           </section>
 
           <section v-else-if="rule.example" class="flex flex-col gap-2">
-            <h2 class="text-lg">Example</h2>
+            <h2>Example</h2>
             <CodeBlock :code="rule.example" />
           </section>
 
           <section v-if="rule.options?.length" class="flex flex-col gap-4">
             <div>
-              <h2 class="text-lg">Configurable options</h2>
+              <h2>Configurable options</h2>
               <p class="text-sm text-muted">
                 Vote for the value each option should take in the generated
                 <code class="text-primary">.editorconfig</code>.
@@ -161,7 +161,7 @@ useHead(() => ({ title: rule.value ? `${rule.value.id} — ${rule.value.title}` 
           </section>
 
           <section v-if="rule.whenToSuppress">
-            <h2 class="text-lg mb-2">When to suppress</h2>
+            <h2 class="mb-2">When to suppress</h2>
             <RuleProse :text="rule.whenToSuppress" />
           </section>
 

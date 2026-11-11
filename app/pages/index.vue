@@ -93,7 +93,7 @@ const features = [
         <UCard v-for="feature in features" :key="feature.title">
           <div class="flex flex-col gap-3">
             <UIcon :name="feature.icon" class="size-8 text-primary" />
-            <h3 class="text-lg">{{ feature.title }}</h3>
+            <h3>{{ feature.title }}</h3>
             <p class="text-sm text-muted">{{ feature.description }}</p>
           </div>
         </UCard>

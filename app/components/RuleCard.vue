@@ -36,7 +36,8 @@ const props = defineProps<{ rule: Rule; tally?: RuleTally; hideGroup?: boolean }
       </div>
 
       <NuxtLink :to="`/rules/${rule.id}`" class="group">
-        <h3 class="group-hover:text-primary transition-colors">
+        <!-- Rule titles stay at body size, so opt out of the base h3 size (main.css). -->
+        <h3 class="text-[length:inherit] leading-[inherit] group-hover:text-primary transition-colors">
           {{ rule.title }}
         </h3>
       </NuxtLink>

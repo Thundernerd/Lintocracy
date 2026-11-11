@@ -40,7 +40,7 @@ async function submit() {
   <UContainer class="py-12 max-w-lg">
     <div class="flex items-center gap-2 mb-2">
       <UIcon name="i-lucide-users" class="size-6 text-primary" />
-      <h1 class="text-3xl">Create a group</h1>
+      <h1>Create a group</h1>
     </div>
     <p class="text-muted mb-8">
       Start a team, invite people with a link, and vote on C# standards together.

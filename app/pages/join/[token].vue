@@ -46,7 +46,7 @@ async function submit() {
     <template v-else-if="group">
       <div class="flex items-center gap-2 mb-2">
         <UIcon name="i-lucide-user-plus" class="size-6 text-primary" />
-        <h1 class="text-3xl">Join {{ group.name }}</h1>
+        <h1>Join {{ group.name }}</h1>
       </div>
       <p class="text-muted mb-8">
         {{ group.memberCount }} member{{ group.memberCount === 1 ? '' : 's' }} so far. Enter your
