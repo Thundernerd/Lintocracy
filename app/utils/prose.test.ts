@@ -72,6 +72,10 @@ describe('renderProse', () => {
     expect(renderProse(input)).toBe('<p>| A | B | |---| | 1 | 2 |</p>')
   })
 
+  it('shows an escaped pipe outside a table as a plain pipe', () => {
+    expect(renderProse('| use a \\|\\| b |')).toBe('<p>| use a || b |</p>')
+  })
+
   it('keeps lines with a stray | as paragraph text when there is no separator row', () => {
     const input = ['Combine flags with a | b.', '| not a table |', 'Still the same paragraph.'].join(
       '\n',

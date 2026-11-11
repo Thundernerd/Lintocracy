@@ -1,13 +1,16 @@
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/** Markdown escapes (`\*`, `\_`) become entities so the emphasis rules skip them. */
-const escapedChar: Record<string, string> = { '*': '&#42;', '_': '&#95;', '\\': '&#92;' }
+/**
+ * Markdown escapes (`\*`, `\_`) become entities so the emphasis rules skip them.
+ * `\|` is a table cell's literal pipe; outside a table it is just `|`.
+ */
+const escapedChar: Record<string, string> = { '*': '&#42;', '_': '&#95;', '\\': '&#92;', '|': '|' }
 
 /** Renders bold and emphasis in text whose code spans are already replaced by placeholders. */
 function renderEmphasis(s: string): string {
   return s
-    .replace(/\\([*_\\])/g, (_, c: string) => escapedChar[c]!)
+    .replace(/\\([*_\\|])/g, (_, c: string) => escapedChar[c]!)
     .replace(/\*\*(?!\s)([^*]+?)(?<!\s)\*\*/g, '<strong>$1</strong>')
     .replace(/(^|[^\w*])\*(?!\s)([^*]+?)(?<!\s)\*(?![\w*])/g, '$1<em>$2</em>')
     .replace(/(^|[^\w])_(?!\s)([^_]+?)(?<!\s)_(?!\w)/g, '$1<em>$2</em>')
