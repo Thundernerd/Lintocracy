@@ -1,16 +1,26 @@
+import { mkdirSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { createClient, type Client } from '@libsql/client'
 import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
+import { renameLegacyDatabaseFile } from './legacyDatabaseFile'
 
 let _db: LibSQLDatabase<typeof schema> | undefined
 let _client: Client | undefined
 
+/** Gets a local database file ready before the client first opens it. */
+function prepareDatabaseFile(url: string) {
+  if (!url.startsWith('file:')) return
+  const path = url.slice('file:'.length)
+  mkdirSync(dirname(path), { recursive: true })
+  renameLegacyDatabaseFile(path)
+}
+
 function client() {
   if (!_client) {
-    const config = useRuntimeConfig()
-    _client = createClient({
-      url: config.databaseUrl as string,
-    })
+    const url = useRuntimeConfig().databaseUrl as string
+    prepareDatabaseFile(url)
+    _client = createClient({ url })
   }
   return _client
 }
@@ -27,14 +37,6 @@ export function useDb() {
  * for production with a managed DB this can be replaced by drizzle-kit migrations.
  */
 export async function ensureSchema() {
-  const url = useRuntimeConfig().databaseUrl as string
-  if (url.startsWith('file:')) {
-    const { mkdir } = await import('node:fs/promises')
-    const { dirname } = await import('node:path')
-    const path = url.slice('file:'.length)
-    await mkdir(dirname(path), { recursive: true }).catch(() => {})
-  }
-
   await client().execute(`
     CREATE TABLE IF NOT EXISTS groups (
       id TEXT PRIMARY KEY,
