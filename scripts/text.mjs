@@ -1,4 +1,4 @@
-// Text helpers shared by the rule scripts (generate-rules.mjs, enrich-rules.mjs).
+// Text helpers for the rule scripts (generate-rules.mjs, enrich-rules.mjs).
 
 const NAMED_ENTITIES = {
   amp: '&',
@@ -55,9 +55,10 @@ function genericParams(count, prefix) {
 }
 
 /**
- * Turns a .NET documentation UID (the target of an `<xref:...>`) into readable
- * text. Generic arity suffixes become type parameters, so no backtick survives
- * to be read as an inline code delimiter:
+ * Turns the target of an `<xref:...>` (a .NET documentation UID, optionally with
+ * a `?displayProperty=...` query and a trailing `*`) into readable text. Generic
+ * arity suffixes become type parameters, so no backtick survives to be read as
+ * an inline code delimiter:
  *   System.Collections.Generic.List`1            -> System.Collections.Generic.List<T>
  *   System.Collections.Generic.Dictionary`2.Remove(`0)
  *                                                -> System.Collections.Generic.Dictionary<T1,T2>.Remove(T1)
@@ -65,16 +66,16 @@ function genericParams(count, prefix) {
  *                                                -> System.Linq.Enumerable.Any<T>(System.Collections.Generic.IEnumerable<T>)
  * URL-encoded UIDs (`%28`, `%7B`, ...) are decoded first; by-ref markers (`@`) are dropped.
  */
-export function formatXrefUid(uid) {
-  let text = uid
+export function formatXref(target) {
+  let uid = target.split('?')[0].replace(/\*+$/, '')
   try {
-    text = decodeURIComponent(uid)
+    uid = decodeURIComponent(uid)
   } catch {
     // Not valid percent-encoding: keep it as written.
   }
-  const paren = text.indexOf('(')
-  const name = paren === -1 ? text : text.slice(0, paren)
-  const params = paren === -1 ? '' : text.slice(paren)
+  const parenIndex = uid.indexOf('(')
+  const name = parenIndex === -1 ? uid : uid.slice(0, parenIndex)
+  const paramList = parenIndex === -1 ? '' : uid.slice(parenIndex)
 
   // `N on a type, ``N on a method. Parameters refer to them by position as `i / ``i.
   const typeArgs = []
@@ -88,11 +89,11 @@ export function formatXrefUid(uid) {
     typeArgs.push(...args)
     return `<${args.join(',')}>`
   })
-  const readableParams = params
+  const readableParamList = paramList
     .replace(/``(\d+)/g, (_, i) => methodArgs[Number(i)] ?? 'T')
     .replace(/`(\d+)/g, (_, i) => typeArgs[Number(i)] ?? 'T')
     .replace(/\{/g, '<')
     .replace(/\}/g, '>')
     .replace(/@/g, '')
-  return readableName + readableParams
+  return readableName + readableParamList
 }

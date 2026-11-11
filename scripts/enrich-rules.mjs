@@ -4,7 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve, basename } from 'node:path'
-import { decodeDocsText, formatXrefUid } from './text.mjs'
+import { decodeDocsText, formatXref } from './text.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -51,7 +51,7 @@ function stripMarkdown(raw) {
   t = t.replace(/^\s*:::.*$/gm, '')
   // <xref:System.Foo.Bar*?displayProperty=...> -> System.Foo.Bar (tolerate a missing `>`),
   // with generic arity spelled out (List`1 -> List<T>) so no backtick is left behind.
-  t = t.replace(/<xref:([^>]+)>?/gi, (_, raw) => formatXrefUid(raw.split('?')[0].replace(/\*+$/, '')))
+  t = t.replace(/<xref:([^>]+)>?/gi, (_, target) => formatXref(target))
   // Markdown links [text](url) -> text
   t = t.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
   // Image / include directives
