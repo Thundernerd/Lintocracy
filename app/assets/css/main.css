@@ -8,6 +8,7 @@
 
 @theme {
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
   /* Slightly roomier than Tailwind's 0.25rem; scales every spacing and size utility. */
   --spacing: 0.28rem;
 }
@@ -26,6 +27,10 @@
   --ui-primary: var(--ui-color-primary-700);
 }
 
+/*
+ * The first three values repeat Nuxt UI's own dark defaults, but they are still needed: without
+ * them the unlayered :root values above would beat Nuxt UI's layered .dark rule in dark mode.
+ */
 .dark {
   --ui-bg: var(--ui-color-neutral-900);
   --ui-bg-muted: var(--ui-color-neutral-800);
@@ -41,7 +46,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
