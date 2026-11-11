@@ -4,12 +4,35 @@ Group voting on C# coding standards. Create a group, invite your teammates, brow
 (`IDExxxx`) and **code quality** (`CAxxxx`) analyzer rules, vote on each, and generate a
 consensus `.editorconfig` you can drop into any C# project.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/rules-dark.png">
+  <img alt="Browsing and voting on rules" src="docs/screenshots/rules.png">
+</picture>
+
 - **Vote Yes** to enable a rule and choose a severity (`suggestion` / `warning` / `error`).
 - **Vote No** to leave a rule off (maps to `none`).
+- **Vote on options**: for rules with configurable `.editorconfig` options, pick the value you prefer.
+- **Change your mind**: click your current choice again, or use *Remove vote*, to withdraw a vote.
 - Your group's votes aggregate into a generated `.editorconfig`:
-  majority Yes enables a rule, and the most-voted severity wins.
+  majority Yes enables a rule, the most-voted severity wins, and the most-voted value wins for each option.
+  You choose how ties are broken, and can fill unvoted rules with Microsoft's documented defaults.
 
 Each group is private — votes, results, and the generated `.editorconfig` are scoped to the group. One ballot per browser per group.
+
+## Screenshots
+
+| Light | Dark |
+| --- | --- |
+| ![Home page, light theme](docs/screenshots/home.png) | ![Home page, dark theme](docs/screenshots/home-dark.png) |
+| **Home** — start or join a group | |
+| ![Rules page, light theme](docs/screenshots/rules.png) | ![Rules page, dark theme](docs/screenshots/rules-dark.png) |
+| **Rules** — search, filter and vote on every rule | |
+| ![Rule detail, light theme](docs/screenshots/rule-detail.png) | ![Rule detail, dark theme](docs/screenshots/rule-detail-dark.png) |
+| **Rule detail** — description, examples, options and the group's tally | |
+| ![Results page, light theme](docs/screenshots/results.png) | ![Results page, dark theme](docs/screenshots/results-dark.png) |
+| **Results** — consensus per rule and the generated `.editorconfig` | |
+| ![Group page, light theme](docs/screenshots/group.png) | ![Group page, dark theme](docs/screenshots/group-dark.png) |
+| **Group** — members, invite link and admin tools | |
 
 ## Tech stack
 
@@ -21,22 +44,29 @@ Each group is private — votes, results, and the generated `.editorconfig` are 
 ## Project structure
 
 ```
-app/                    # Nuxt app (pages, components, composables, utils)
-  components/           # RuleCard, VoteControl, CodeBlock, TallyBar, SeverityBadge
-  composables/          # useVoting (shared state + optimistic updates), useHighlighter
-  pages/                # index, rules, rules/[id], results, about
+app/                    # Nuxt app
+  assets/css/main.css   # Tailwind + Nuxt UI imports and the Editorial theme (fonts, colours, headings)
+  components/           # RuleCard, VoteControl, OptionVoteControl, RuleProse, CodeBlock, TallyBar, SeverityBadge
+  composables/          # useGroup (active/joined groups), useVoting (shared state + optimistic updates), useHighlighter
+  pages/                # index, rules, rules/[id], results, about, groups/new, join/[token], g/[groupId]
+  utils/                # prose rendering, severity labels/colours/icons
 server/
   api/rules/            # GET /api/rules, GET /api/rules/:id
-  api/votes/            # GET summary, GET me, POST (cast/update a vote)
-  api/editorconfig.get  # generated .editorconfig (?download=true, ?includeUnvoted=true)
+  api/groups/           # create, join by invite, admin unlock, rename, clear votes, members
+  api/votes/            # GET summary, GET me, POST (cast/update), DELETE (remove a vote)
+  api/option-votes/     # same as votes, for configurable option values
+  api/editorconfig.get  # generated .editorconfig
   data/rules.ts         # merges the full catalog with curated overrides
   data/rules.generated.json  # full CA + IDE catalog (auto-generated)
   data/curated.ts       # hand-curated rules (rich descriptions + examples)
-  db/                   # Drizzle schema + connection
+  db/                   # Drizzle schema + connection (schema is created on startup)
+  utils/                # group/membership cookies, admin passwords, tallies
 shared/
-  types/rule.ts         # shared types (Rule, Severity, RuleTally, ...)
-  utils/consensus.ts    # vote -> consensus computation
+  constants/database.ts # SQLite file location
+  types/                # shared types (Rule, Severity, RuleTally, groups, ...)
+  utils/consensus.ts    # vote -> consensus computation (incl. tie-breaking)
   utils/editorconfig.ts # consensus -> .editorconfig text
+scripts/                # rules:generate and rules:enrich (see below)
 ```
 
 The dataset combines two sources, validated with Zod on server startup:
@@ -49,7 +79,7 @@ The dataset combines two sources, validated with Zod on server startup:
 
 Imported rules are further **enriched** from the individual Microsoft docs pages
 (overview/description, cause, how-to-fix, when-to-suppress, configurable option tables,
-and a C# example) by `scripts/enrich-rules.mjs`, which reads a local clone of the docs.
+and all C# examples) by `scripts/enrich-rules.mjs`, which reads a local clone of the docs.
 
 To refresh the catalog from Microsoft's docs:
 
@@ -68,7 +98,7 @@ npm run rules:enrich
 npm install
 ```
 
-Optionally copy the env example (the default works out of the box with a local SQLite file):
+Optionally copy the env example. The defaults work out of the box for local development:
 
 ```bash
 cp .env.example .env
@@ -80,19 +110,30 @@ cp .env.example .env
 npm run dev
 ```
 
-App runs on `http://localhost:3000`. The SQLite schema is created automatically on first
-run under `.data/rule-wars.db`.
+App runs on `http://localhost:3000`. The SQLite database lives at `.data/rule-wars.db`;
+its schema is created automatically on first run.
 
 ## Production
 
 ```bash
 npm run build
-npm run preview
+node .output/server/index.mjs   # or: npm run preview
 ```
 
-For a hosted database, set `DATABASE_URL` (and `DATABASE_AUTH_TOKEN`) to a libSQL/Turso
-endpoint. `drizzle.config.ts` is provided for generating/applying migrations with
-`drizzle-kit` when not relying on the dev-time auto-create.
+Set `NUXT_ADMIN_SECRET` to a long random value — it signs the group admin cookies. The
+database is the SQLite file at `.data/rule-wars.db`, so keep that directory on persistent storage.
+
+### Docker
+
+Every push to `main` builds and publishes a Docker image (`.github/workflows/docker.yml`).
+`docker-compose.yml` runs it with the database on a named volume:
+
+```bash
+ADMIN_SECRET=<long-random-string> docker compose up -d
+```
+
+Compose passes `ADMIN_SECRET` to the app as `NUXT_ADMIN_SECRET`. Set `PORT` to serve on a
+port other than 3000. To build the image yourself instead: `docker build -t rule-wars .`
 
 ## API
 
@@ -100,14 +141,12 @@ All voting is scoped to a **group**. Create a group (you become its admin via a
 password), share the invite link, and teammates join by entering their name. Votes,
 results, and the generated `.editorconfig` are private to each group.
 
-Set `ADMIN_SECRET` to a long random value in production — it signs the group admin cookies.
-
 | Method | Route | Description |
 | ------ | ----- | ----------- |
 | GET | `/api/rules` | All rules in the dataset |
 | GET | `/api/rules/:id` | A single rule |
 | POST | `/api/groups` | Create a group `{ name, displayName, password }` (creator becomes admin) |
-| GET | `/api/groups/:id` | Group context (name, members, my membership, `isAdmin`) |
+| GET | `/api/groups/:id` | Group context (name, member count, my membership, `isAdmin`) |
 | GET | `/api/groups/by-invite/:token` | Public group info for the join screen |
 | POST | `/api/groups/by-invite/:token/join` | Join a group `{ name }` |
 | POST | `/api/groups/:id/admin` | Unlock admin with the group `{ password }` |
@@ -117,4 +156,17 @@ Set `ADMIN_SECRET` to a long random value in production — it signs the group a
 | GET | `/api/votes/summary?groupId=` | Per-rule tallies + consensus for a group |
 | GET | `/api/votes/me?groupId=` | The current member's votes |
 | POST | `/api/votes` | Cast/update a vote `{ groupId, ruleId, vote, severity? }` |
-| GET | `/api/editorconfig?groupId=` | Generated `.editorconfig` (`?download=true`, `?includeUnvoted=true`, `?useMsDefaults=true`) |
+| DELETE | `/api/votes` | Remove your vote `{ groupId, ruleId }` |
+| GET | `/api/option-votes/summary?groupId=` | Per-option tallies for a group |
+| GET | `/api/option-votes/me?groupId=` | The current member's option votes |
+| POST | `/api/option-votes` | Cast/update an option vote `{ groupId, ruleId, optionName, value }` |
+| DELETE | `/api/option-votes` | Remove your option vote `{ groupId, ruleId, optionName }` |
+| GET | `/api/editorconfig?groupId=` | Generated `.editorconfig` (see below) |
+
+`/api/editorconfig` query options:
+
+- `download=true` — serve as an `.editorconfig` attachment
+- `includeUnvoted=true` — list rules nobody voted on, as `none`
+- `useMsDefaults=true` — fill unvoted rules and options with Microsoft's documented defaults
+- `yesNoTie=include|exclude` — enable or skip a rule with equal Yes and No votes (default `exclude`)
+- `severityTie=highest|lowest` — pick the strictest or mildest severity on a tie (default `highest`)
