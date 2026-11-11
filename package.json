@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare",
     "rules:generate": "node scripts/generate-rules.mjs",
     "rules:enrich": "node scripts/enrich-rules.mjs",
-    "test": "vitest run",
+    "test": "vitest run --dir app && node --test \"scripts/**/*.test.mjs\"",
     "typecheck": "nuxi typecheck"
   },
   "dependencies": {
