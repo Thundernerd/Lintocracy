@@ -9,8 +9,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     databaseUrl: DATABASE_URL,
     // Secret used to sign group admin cookies. Set NUXT_ADMIN_SECRET to a long random
-    // value in production. (Docker Compose takes ADMIN_SECRET and passes it on as
-    // NUXT_ADMIN_SECRET.)
+    // value in production (Docker Compose fills it from ADMIN_SECRET).
     adminSecret: 'dev-insecure-admin-secret',
   },
   app: {
