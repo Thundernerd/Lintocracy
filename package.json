@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "rules:generate": "node scripts/generate-rules.mjs",
-    "rules:enrich": "node scripts/enrich-rules.mjs"
+    "rules:enrich": "node scripts/enrich-rules.mjs",
+    "test": "node --test \"scripts/**/*.test.mjs\""
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

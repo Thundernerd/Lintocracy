@@ -2,7 +2,7 @@
 // Microsoft docs clone in ./code-analysis. Run: node scripts/enrich-rules.mjs
 import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, resolve, basename } from 'node:path'
 import { decodeDocsText, formatXref } from './text.mjs'
 
@@ -135,8 +135,17 @@ function applyExamples(out, md, sectionNames) {
   delete out.examples
 }
 
+/**
+ * Whether a raw "Option values" cell is a literal `.editorconfig` value: a
+ * single code span (`true`) or one bare token. Anything else is prose that
+ * describes the accepted values ("One or more C# modifiers, such as ...").
+ */
+function isLiteralValueCell(cell) {
+  return /^`[^`]+`$/.test(cell) || /^[^\s`]+$/.test(cell)
+}
+
 /** Parses the `## Options` section into structured option blocks (style rules). */
-function parseOptions(md) {
+export function parseOptions(md) {
   const body = section(md, ['Options'])
   if (!body) return undefined
   const blocks = body.split(/^###\s+/m).slice(1)
@@ -150,28 +159,38 @@ function parseOptions(md) {
     let defaultValue
     const values = []
     let inValues = false
+    // A prose cell means the option takes values the docs cannot enumerate.
+    let freeForm = false
 
     for (const cols of rows) {
       const label = (cols[0] || '').replace(/\*/g, '').trim()
-      const v = (cols[1] || '').replace(/`/g, '').trim()
+      const raw = (cols[1] || '').trim()
+      const v = raw.replace(/`/g, '').trim()
       const desc = cleanText((cols[2] || '').trim()) || undefined
+      const addValue = () => {
+        if (!v) return
+        if (isLiteralValueCell(raw)) values.push({ value: v, description: desc })
+        else freeForm = true
+      }
       if (/^Option name/i.test(label)) {
         name = v
         inValues = false
       } else if (/^Option values/i.test(label)) {
         inValues = true
-        if (v) values.push({ value: v, description: desc })
+        addValue()
       } else if (/^Default option value/i.test(label)) {
         defaultValue = v
         inValues = false
-      } else if (label === '' && inValues && v) {
-        values.push({ value: v, description: desc })
+      } else if (label === '' && inValues) {
+        addValue()
       } else if (label && !/^(Property|---)/i.test(label)) {
         inValues = false
       }
     }
 
-    if (name) options.push({ name, defaultValue, values: values.length ? values : undefined })
+    if (name) {
+      options.push({ name, defaultValue, values: values.length && !freeForm ? values : undefined })
+    }
   }
 
   return options.length ? options : undefined
@@ -256,7 +275,10 @@ async function main() {
   console.log(`Enriched ${enriched} rules from docs (${missing} missing local page).`)
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+// Run only as a script, so tests can import the parsers without rewriting the catalog.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}
