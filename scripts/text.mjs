@@ -1,4 +1,4 @@
-// Text helpers shared by the rule scripts (generate-rules.mjs, enrich-rules.mjs).
+// Text helpers for the rule scripts (generate-rules.mjs, enrich-rules.mjs).
 
 const NAMED_ENTITIES = {
   amp: '&',
@@ -47,4 +47,55 @@ function unescapeMarkdown(text) {
 /** Turns docs markdown text into the literal characters it displays as. */
 export function decodeDocsText(text) {
   return decodeEntities(unescapeMarkdown(text))
+}
+
+/** Placeholder names for `count` generic parameters: `T` alone, else `T1`, `T2`, ... */
+function genericParams(count, prefix) {
+  return count === 1 ? [prefix] : Array.from({ length: count }, (_, i) => `${prefix}${i + 1}`)
+}
+
+/**
+ * Turns the target of an `<xref:...>` (a .NET documentation UID, optionally with
+ * a `?displayProperty=...` query and a trailing `*`) into readable text. Generic
+ * arity suffixes become type parameters, so no backtick survives to be read as
+ * an inline code delimiter:
+ *   System.Collections.Generic.List`1            -> System.Collections.Generic.List<T>
+ *   System.Collections.Generic.Dictionary`2.Remove(`0)
+ *                                                -> System.Collections.Generic.Dictionary<T1,T2>.Remove(T1)
+ *   System.Linq.Enumerable.Any``1(System.Collections.Generic.IEnumerable{``0})
+ *                                                -> System.Linq.Enumerable.Any<T>(System.Collections.Generic.IEnumerable<T>)
+ * URL-encoded UIDs (`%28`, `%7B`, ...) are decoded first; by-ref markers (`@`) are dropped.
+ */
+export function formatXref(target) {
+  let uid = target.split('?')[0].replace(/\*+$/, '')
+  try {
+    uid = decodeURIComponent(uid)
+  } catch {
+    // Not valid percent-encoding: keep it as written.
+  }
+  const parenIndex = uid.indexOf('(')
+  const name = parenIndex === -1 ? uid : uid.slice(0, parenIndex)
+  const paramList = parenIndex === -1 ? '' : uid.slice(parenIndex)
+
+  // `N on a type, ``N on a method. Parameters refer to them by position as `i / ``i,
+  // where `i counts across the whole type chain (Outer`1.Inner`1 -> Outer<T1>.Inner<T2>).
+  const typeArity = [...name.matchAll(/(?<!`)`(\d+)/g)].reduce((n, m) => n + Number(m[1]), 0)
+  const typeArgs = genericParams(typeArity, 'T')
+  let nextTypeArg = 0
+  let methodArgs = []
+  const readableName = name.replace(/(`{1,2})(\d+)/g, (_, ticks, count) => {
+    if (ticks.length === 2) {
+      methodArgs = genericParams(Number(count), typeArity ? 'U' : 'T')
+      return `<${methodArgs.join(',')}>`
+    }
+    const args = typeArgs.slice(nextTypeArg, (nextTypeArg += Number(count)))
+    return `<${args.join(',')}>`
+  })
+  const readableParamList = paramList
+    .replace(/``(\d+)/g, (_, i) => methodArgs[Number(i)] ?? 'T')
+    .replace(/`(\d+)/g, (_, i) => typeArgs[Number(i)] ?? 'T')
+    .replace(/\{/g, '<')
+    .replace(/\}/g, '>')
+    .replace(/@/g, '')
+  return readableName + readableParamList
 }
