@@ -56,9 +56,9 @@ body {
   }
 
   /*
-   * Default sizes: page title, section title, card title. Headings that Nuxt UI renders inside
-   * its components (e.g. the `UModal` title, which carries `data-slot`) are left alone, since
-   * those components size their own titles.
+   * Default sizes: h1 for page titles, h2/h3 for section and feature titles. Headings that
+   * Nuxt UI renders inside its components (e.g. the `UModal` title) carry `data-slot` and are
+   * left alone, since those components size their own titles.
    */
   h1:not([data-slot]) {
     font-size: var(--text-3xl);
