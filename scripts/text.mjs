@@ -48,3 +48,51 @@ function unescapeMarkdown(text) {
 export function decodeDocsText(text) {
   return decodeEntities(unescapeMarkdown(text))
 }
+
+/** Placeholder names for `count` generic parameters: `T` alone, else `T1`, `T2`, ... */
+function genericParams(count, prefix) {
+  return count === 1 ? [prefix] : Array.from({ length: count }, (_, i) => `${prefix}${i + 1}`)
+}
+
+/**
+ * Turns a .NET documentation UID (the target of an `<xref:...>`) into readable
+ * text. Generic arity suffixes become type parameters, so no backtick survives
+ * to be read as an inline code delimiter:
+ *   System.Collections.Generic.List`1            -> System.Collections.Generic.List<T>
+ *   System.Collections.Generic.Dictionary`2.Remove(`0)
+ *                                                -> System.Collections.Generic.Dictionary<T1,T2>.Remove(T1)
+ *   System.Linq.Enumerable.Any``1(System.Collections.Generic.IEnumerable{``0})
+ *                                                -> System.Linq.Enumerable.Any<T>(System.Collections.Generic.IEnumerable<T>)
+ * URL-encoded UIDs (`%28`, `%7B`, ...) are decoded first; by-ref markers (`@`) are dropped.
+ */
+export function formatXrefUid(uid) {
+  let text = uid
+  try {
+    text = decodeURIComponent(uid)
+  } catch {
+    // Not valid percent-encoding: keep it as written.
+  }
+  const paren = text.indexOf('(')
+  const name = paren === -1 ? text : text.slice(0, paren)
+  const params = paren === -1 ? '' : text.slice(paren)
+
+  // `N on a type, ``N on a method. Parameters refer to them by position as `i / ``i.
+  const typeArgs = []
+  let methodArgs = []
+  const readableName = name.replace(/(`{1,2})(\d+)/g, (_, ticks, count) => {
+    if (ticks.length === 2) {
+      methodArgs = genericParams(Number(count), typeArgs.length ? 'U' : 'T')
+      return `<${methodArgs.join(',')}>`
+    }
+    const args = genericParams(Number(count), 'T')
+    typeArgs.push(...args)
+    return `<${args.join(',')}>`
+  })
+  const readableParams = params
+    .replace(/``(\d+)/g, (_, i) => methodArgs[Number(i)] ?? 'T')
+    .replace(/`(\d+)/g, (_, i) => typeArgs[Number(i)] ?? 'T')
+    .replace(/\{/g, '<')
+    .replace(/\}/g, '>')
+    .replace(/@/g, '')
+  return readableName + readableParams
+}
