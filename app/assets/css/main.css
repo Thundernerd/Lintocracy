@@ -1,2 +1,5 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* PROTOTYPE (issue #1): throwaway visual styles, switched with ?style= in dev. */
+@import "./prototype-styles.css";

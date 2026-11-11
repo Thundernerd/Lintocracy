@@ -134,5 +134,12 @@ const isDark = computed({
         </span>
       </UContainer>
     </footer>
+
+    <!-- PROTOTYPE (issue #1): visual-style switcher, dev server only. -->
+    <DevOnly>
+      <ClientOnly>
+        <PrototypeStyleSwitcher />
+      </ClientOnly>
+    </DevOnly>
   </div>
 </template>

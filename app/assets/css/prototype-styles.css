@@ -1,0 +1,124 @@
+/*
+ * PROTOTYPE (issue #1): throwaway visual styles. Do not ship.
+ *
+ * Each block is keyed by <html data-style="…">, which app/components/prototype/StyleSwitcher.vue
+ * sets from ?style=. Colours (primary / neutral / …) are set at runtime through
+ * appConfig.ui.colors (see app/prototype/styles.ts); this file handles everything else:
+ * fonts, radius, density (--spacing), surfaces and a few per-style tweaks.
+ *
+ * Rules here are unlayered on purpose so they beat Nuxt UI's and Tailwind's layered styles.
+ */
+
+/* ───────────── B · Terminal ───────────── */
+html[data-style="terminal"] {
+  --font-sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ui-radius: 0;
+  --spacing: 0.21rem;
+  --ui-bg: var(--ui-color-neutral-50);
+  --ui-bg-muted: var(--ui-color-neutral-100);
+  --ui-bg-elevated: var(--ui-color-neutral-200);
+  --ui-border: var(--ui-color-neutral-300);
+  --ui-border-accented: var(--ui-color-neutral-400);
+  --ui-primary: var(--ui-color-primary-600);
+}
+html[data-style="terminal"].dark {
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-bg-muted: var(--ui-color-neutral-900);
+  --ui-bg-elevated: var(--ui-color-neutral-900);
+  --ui-bg-accented: var(--ui-color-neutral-800);
+  --ui-border: var(--ui-color-neutral-800);
+  --ui-border-accented: var(--ui-color-neutral-700);
+  --ui-primary: var(--ui-color-primary-400);
+}
+html[data-style="terminal"] body {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9375rem;
+}
+/* Borders instead of shadows: drop the drop-shadow part of box-shadow, keep rings. */
+html[data-style="terminal"] * {
+  --tw-shadow: 0 0 #0000 !important;
+}
+html[data-style="terminal"] :is(h1, h2, h3) {
+  letter-spacing: -0.02em;
+}
+html[data-style="terminal"] h1::before {
+  content: "> ";
+  color: var(--ui-primary);
+}
+html[data-style="terminal"] [data-tally-bar] {
+  border-radius: 0;
+}
+
+/* ───────────── C · Editorial ───────────── */
+html[data-style="editorial"] {
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --ui-radius: 0.5rem;
+  --spacing: 0.28rem;
+  --ui-bg: var(--ui-color-neutral-50);
+  --ui-bg-muted: var(--ui-color-neutral-100);
+  --ui-text: var(--ui-color-neutral-800);
+  /* Muted accent: a deeper shade of the primary in light mode, softer in dark. */
+  --ui-primary: var(--ui-color-primary-700);
+}
+html[data-style="editorial"].dark {
+  --ui-bg: var(--ui-color-neutral-900);
+  --ui-bg-muted: var(--ui-color-neutral-800);
+  --ui-text: var(--ui-color-neutral-200);
+  --ui-primary: var(--ui-color-primary-500);
+}
+html[data-style="editorial"] body {
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+html[data-style="editorial"] :is(h1, h2, h3) {
+  font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ───────────── D · Arena ───────────── */
+html[data-style="arena"] {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --ui-radius: 0.75rem;
+  --ui-primary: var(--ui-color-primary-600);
+  --ui-error: var(--ui-color-error-600);
+  --ui-text: var(--ui-color-neutral-900);
+  --ui-text-muted: var(--ui-color-neutral-600);
+  --ui-text-highlighted: #000;
+  --ui-border: var(--ui-color-neutral-300);
+  --ui-border-accented: var(--ui-color-neutral-900);
+}
+html[data-style="arena"].dark {
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-bg-muted: var(--ui-color-neutral-900);
+  --ui-bg-elevated: var(--ui-color-neutral-900);
+  --ui-primary: var(--ui-color-primary-500);
+  --ui-error: var(--ui-color-error-500);
+  --ui-text: var(--ui-color-neutral-100);
+  --ui-text-muted: var(--ui-color-neutral-400);
+  --ui-text-highlighted: #fff;
+  --ui-border: var(--ui-color-neutral-700);
+  --ui-border-accented: var(--ui-color-neutral-100);
+}
+html[data-style="arena"] body {
+  font-family: "Archivo", ui-sans-serif, system-ui, sans-serif;
+}
+html[data-style="arena"] :is(h1, h2, h3) {
+  font-family: "Archivo Black", "Archivo", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+html[data-style="arena"] h1 {
+  line-height: 1.05;
+}
+/* Yes vs No, loud: thick bar, full-strength colours, a hard seam between the sides. */
+html[data-style="arena"] [data-tally-bar] {
+  height: 0.875rem;
+}
+html[data-style="arena"] [data-tally-no] {
+  background-color: var(--ui-error);
+  box-shadow: inset 3px 0 0 var(--ui-bg);
+}

@@ -22,15 +22,17 @@ const yesPct = computed(() => (total.value ? Math.round((yes.value / total.value
         <UIcon name="i-lucide-thumbs-down" class="size-3 text-muted" />
       </span>
     </div>
-    <div class="h-2 w-full rounded-full bg-elevated overflow-hidden flex">
+    <div class="h-2 w-full rounded-full bg-elevated overflow-hidden flex" data-tally-bar>
       <div
         v-if="total"
         class="bg-primary h-full transition-all"
+        data-tally-yes
         :style="{ width: `${yesPct}%` }"
       />
       <div
         v-if="total"
         class="bg-error/60 h-full transition-all"
+        data-tally-no
         :style="{ width: `${100 - yesPct}%` }"
       />
       <div v-else class="h-full w-full bg-elevated" />
