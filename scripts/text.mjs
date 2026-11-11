@@ -49,6 +49,19 @@ export function decodeDocsText(text) {
   return decodeEntities(unescapeMarkdown(text))
 }
 
+/**
+ * Like decodeDocsText, but a pipe written inside a pipe-table row (`&#124;` or
+ * `\|`) stays escaped as `\|`, so it is not read as a column break.
+ * app/utils/prose.ts turns it back into a literal `|` at render time.
+ */
+export function decodeDocsProse(text) {
+  const PIPE = '\u0001'
+  const protectedText = text.replace(/^[ \t]*\|.*$/gm, (row) =>
+    row.replace(/&#124;|&#x7c;|\\\|/gi, PIPE),
+  )
+  return decodeDocsText(protectedText).replaceAll(PIPE, '\\|')
+}
+
 /** Placeholder names for `count` generic parameters: `T` alone, else `T1`, `T2`, ... */
 function genericParams(count, prefix) {
   return count === 1 ? [prefix] : Array.from({ length: count }, (_, i) => `${prefix}${i + 1}`)

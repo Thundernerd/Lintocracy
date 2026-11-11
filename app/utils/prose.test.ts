@@ -48,6 +48,16 @@ describe('renderProse', () => {
     )
   })
 
+  it('reads \\| in a table cell as a literal pipe, not a column break', () => {
+    const input = [
+      '| C# | Visual Basic | Alternate method name |',
+      '| -- | ------------ | --------------------- |',
+      '| \\|\\| | N/A | LogicalOr |',
+    ].join('\n')
+
+    expect(renderProse(input)).toContain('<tr><td>||</td><td>N/A</td><td>LogicalOr</td></tr>')
+  })
+
   it('keeps lines with a stray | as paragraph text when there is no separator row', () => {
     const input = ['Combine flags with a | b.', '| not a table |', 'Still the same paragraph.'].join(
       '\n',

@@ -39,13 +39,13 @@ const isTableRow = (line: string) => line.startsWith('|')
 /** The `|---|:--:|` line under a table's header row. */
 const isTableSeparator = (line: string) => /^\|(\s*:?-+:?\s*\|)+$/.test(line)
 
-/** Splits `| a | b |` into its trimmed cells. */
+/** Splits `| a | b |` into its trimmed cells; `\|` is a literal pipe inside a cell. */
 const tableCells = (line: string) =>
   line
     .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim())
+    .replace(/(?<!\\)\|$/, '')
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replace(/\\\|/g, '|'))
 
 /** Renders a cell's inline markup; the docs write line breaks in cells as `<br/>`. */
 const renderCell = (cell: string) =>

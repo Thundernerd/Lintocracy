@@ -4,7 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve, basename } from 'node:path'
-import { decodeDocsText, formatXref } from './text.mjs'
+import { decodeDocsProse, decodeDocsText, formatXref } from './text.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -69,7 +69,7 @@ function stripMarkdown(raw) {
  */
 function cleanText(raw) {
   const t = stripMarkdown(raw)
-  return t && (decodeDocsText(t) || undefined)
+  return t && (decodeDocsProse(t) || undefined)
 }
 
 /** Parses the bold property table that follows the page H1. */
