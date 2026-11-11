@@ -111,7 +111,7 @@ function downloadConfig() {
 
 <template>
   <UContainer class="py-10">
-    <h1 class="text-3xl font-bold mb-2">
+    <h1 class="text-3xl mb-2">
       {{ hasGroup && activeGroup ? `${activeGroup.name} results` : 'Results' }}
     </h1>
 
