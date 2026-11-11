@@ -101,10 +101,11 @@ async function vote(value: string) {
               Consensus
             </UBadge>
           </div>
-          <p v-if="val.description" class="text-muted mt-1">{{ val.description }}</p>
+          <RuleProse v-if="val.description" inline :text="val.description" class="block mt-1" />
         </div>
         <span class="shrink-0 text-xs text-muted tabular-nums">{{ count(val.value) }}</span>
       </button>
     </div>
   </div>
 </template>
+
