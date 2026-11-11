@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve, basename } from 'node:path'
+import { decodeDocsText } from './text.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -52,6 +53,8 @@ function cleanText(raw) {
   // Image / include directives
   t = t.replace(/:::.*$/gm, '')
   t = t.replace(/<!--.*?-->/gs, '')
+  // Entities and backslash escapes (&#39;, &lt;, &mdash;, \<T\>) -> literal characters.
+  t = decodeDocsText(t)
   // Bullet markers kept; collapse excess whitespace.
   t = t.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
   return t || undefined
@@ -64,7 +67,7 @@ function propertyTable(md) {
   for (const m of md.matchAll(re)) {
     const key = m[1].trim()
     let value = m[2].trim()
-    value = value.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/`/g, '')
+    value = decodeDocsText(value.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/`/g, ''))
     props[key] = value
   }
   return props

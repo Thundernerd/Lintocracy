@@ -8,6 +8,7 @@ import { writeFile, readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
+import { decodeDocsText } from './text.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -56,15 +57,16 @@ function parseQuality(md) {
   const re = /\|\s*\[(CA\d{4}):\s*([^\]]+)\]\(([^)]+)\)\s*\|\s*([^|]*?)\s*\|/g
   const rules = []
   for (const m of md.matchAll(re)) {
-    const [, id, title, file, description] = m
+    const [, id, rawTitle, file, rawDescription] = m
     const num = Number(id.slice(2))
+    const title = decodeDocsText(rawTitle).trim()
     rules.push({
       id,
-      title: title.trim(),
+      title,
       category: 'quality',
       group: caGroup(num),
-      summary: title.trim(),
-      description: description.trim() || undefined,
+      summary: title,
+      description: decodeDocsText(rawDescription).trim() || undefined,
       docsUrl: docsUrl(QUALITY_BASE, file),
       defaultSeverity: 'warning',
       supportsSeverity: true,
@@ -78,13 +80,14 @@ function parseStyle(md) {
   const re = /\|\s*\[(IDE\d{4})\]\(([^)]+)\)\s*\|\s*([^|]+?)\s*\|([^\n]*)\|/g
   const rules = []
   for (const m of md.matchAll(re)) {
-    const [, id, file, title] = m
+    const [, id, file, rawTitle] = m
+    const title = decodeDocsText(rawTitle.replace(/`/g, '')).trim()
     rules.push({
       id,
-      title: title.replace(/`/g, '').trim(),
+      title,
       category: 'style',
       group: 'Code style',
-      summary: title.replace(/`/g, '').trim(),
+      summary: title,
       docsUrl: docsUrl(STYLE_BASE, file),
       defaultSeverity: 'suggestion',
       supportsSeverity: true,
