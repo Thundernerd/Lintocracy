@@ -40,21 +40,19 @@ export function renderInlineProse(input?: string): string {
 export function renderProse(input?: string): string {
   if (!input) return ''
 
-  const inline = renderInlineProse
-
   const out: string[] = []
   let list: string[] = []
   let para: string[] = []
 
   const flushList = () => {
     if (list.length) {
-      out.push(`<ul>${list.map((li) => `<li>${inline(li)}</li>`).join('')}</ul>`)
+      out.push(`<ul>${list.map((li) => `<li>${renderInlineProse(li)}</li>`).join('')}</ul>`)
       list = []
     }
   }
   const flushPara = () => {
     if (para.length) {
-      out.push(`<p>${inline(para.join(' '))}</p>`)
+      out.push(`<p>${renderInlineProse(para.join(' '))}</p>`)
       para = []
     }
   }

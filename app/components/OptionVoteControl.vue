@@ -101,11 +101,7 @@ async function vote(value: string) {
               Consensus
             </UBadge>
           </div>
-          <p
-            v-if="val.description"
-            class="option-prose text-muted mt-1"
-            v-html="renderInlineProse(val.description)"
-          />
+          <RuleProse v-if="val.description" inline :text="val.description" class="block mt-1" />
         </div>
         <span class="shrink-0 text-xs text-muted tabular-nums">{{ count(val.value) }}</span>
       </button>
@@ -113,12 +109,3 @@ async function vote(value: string) {
   </div>
 </template>
 
-<style scoped>
-.option-prose :deep(code) {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85em;
-  background: var(--ui-bg-elevated);
-  padding: 0.1rem 0.3rem;
-  border-radius: 0.25rem;
-}
-</style>
