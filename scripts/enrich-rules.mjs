@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve, basename } from 'node:path'
+import { decodeDocsText } from './text.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -34,8 +35,11 @@ function stripCodeFences(text) {
   return text.replace(/```[\s\S]*?```/g, '').replace(/:::[\s\S]*?:::/g, '')
 }
 
-/** Converts docs markdown to readable plain text (keeps inline `code`). */
-function cleanText(raw) {
+/**
+ * Strips docs markdown down to readable text (keeps inline `code`) without
+ * decoding entities, so it is safe to run again on already-cleaned text.
+ */
+function stripMarkdown(raw) {
   if (!raw) return undefined
   let t = stripCodeFences(raw)
   // Remove include directives, e.g. [!INCLUDE [label](path.md)].
@@ -57,6 +61,16 @@ function cleanText(raw) {
   return t || undefined
 }
 
+/**
+ * Converts raw docs markdown to readable plain text, decoding entities and
+ * backslash escapes (&#39;, &lt;, &mdash;, \<T\>) to literal characters.
+ * Decode exactly once: text that is already clean goes through stripMarkdown.
+ */
+function cleanText(raw) {
+  const t = stripMarkdown(raw)
+  return t && (decodeDocsText(t) || undefined)
+}
+
 /** Parses the bold property table that follows the page H1. */
 function propertyTable(md) {
   const props = {}
@@ -64,7 +78,7 @@ function propertyTable(md) {
   for (const m of md.matchAll(re)) {
     const key = m[1].trim()
     let value = m[2].trim()
-    value = value.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/`/g, '')
+    value = decodeDocsText(value.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/`/g, ''))
     props[key] = value
   }
   return props
@@ -198,7 +212,8 @@ async function enrich(rule) {
     }
   } else {
     out.cause = cleanText(section(md, ['Cause']))
-    const indexDesc = cleanText(out.description)
+    // Already decoded by generate-rules (or a previous enrich run).
+    const indexDesc = stripMarkdown(out.description)
     const sectionDesc = cleanText(section(md, ['Rule description']))
     out.description =
       sectionDesc && sectionDesc.length > (indexDesc?.length ?? 0) ? sectionDesc : indexDesc
@@ -212,10 +227,11 @@ async function enrich(rule) {
     }
   }
 
-  // Final safety pass so no raw markdown/xref leaks into any text field.
-  if (out.title) out.title = cleanText(out.title)
-  out.summary = cleanText(out.summary) || out.summary
-  if (out.description) out.description = cleanText(out.description)
+  // Final safety pass so no raw markdown/xref leaks into any text field. These
+  // fields are already decoded, so strip without decoding a second time.
+  if (out.title) out.title = stripMarkdown(out.title)
+  out.summary = stripMarkdown(out.summary) || out.summary
+  if (out.description) out.description = stripMarkdown(out.description)
 
   // Drop undefined keys for a clean JSON.
   for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k]
