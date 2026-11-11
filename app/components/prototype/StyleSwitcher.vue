@@ -36,12 +36,19 @@ function onKey(e: KeyboardEvent) {
   go(e.key === 'ArrowLeft' ? -1 : 1)
 }
 
+// In-app links don't know about ?style=, so carry it over to every navigation that drops it.
+const removeGuard = router.beforeEach((to, from) => {
+  if (to.query.style !== undefined || from.query.style === undefined) return
+  return { path: to.path, hash: to.hash, query: { ...to.query, style: from.query.style } }
+})
+
 onMounted(() => {
   apply()
   window.addEventListener('keydown', onKey)
 })
 watch(current, apply)
 onBeforeUnmount(() => {
+  removeGuard()
   window.removeEventListener('keydown', onKey)
   Object.assign(appConfig.ui.colors, defaultColors)
   delete document.documentElement.dataset.style
