@@ -2,6 +2,9 @@
 // PROTOTYPE (issue #1): floating style switcher. Applies the `?style=` choice client-side
 // and lets you cycle styles with the arrows or the ← / → keys. Mounted inside <DevOnly>.
 import { findPrototypeStyle, prototypeStyles } from '~/prototype/styles'
+// Imported here, not from main.css, so the styles and their fonts stay out of production
+// builds along with this <DevOnly> component.
+import '~/assets/css/prototype-styles.css'
 
 const route = useRoute()
 const router = useRouter()

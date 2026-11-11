@@ -26,7 +26,6 @@ const yesPct = computed(() => (total.value ? Math.round((yes.value / total.value
       <div
         v-if="total"
         class="bg-primary h-full transition-all"
-        data-tally-yes
         :style="{ width: `${yesPct}%` }"
       />
       <div
