@@ -4,7 +4,10 @@ Group voting on C# coding standards. Create a group, invite your teammates, brow
 (`IDExxxx`) and **code quality** (`CAxxxx`) analyzer rules, vote on each, and generate a
 consensus `.editorconfig` you can drop into any C# project.
 
-![Browsing and voting on rules](docs/screenshots/rules.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/rules-dark.png">
+  <img alt="Browsing and voting on rules" src="docs/screenshots/rules.png">
+</picture>
 
 - **Vote Yes** to enable a rule and choose a severity (`suggestion` / `warning` / `error`).
 - **Vote No** to leave a rule off (maps to `none`).
@@ -18,14 +21,18 @@ Each group is private — votes, results, and the generated `.editorconfig` are 
 
 ## Screenshots
 
-| | |
+| Light | Dark |
 | --- | --- |
-| ![Home page](docs/screenshots/home.png) | ![Rule detail with description, example and voting](docs/screenshots/rule-detail.png) |
-| **Home** — start or join a group | **Rule detail** — description, examples, options and the group's tally |
-| ![Results page with the generated .editorconfig](docs/screenshots/results.png) | ![Group page with members and admin tools](docs/screenshots/group.png) |
-| **Results** — consensus per rule and the generated `.editorconfig` | **Group** — members, invite link and admin tools |
-| ![Rules page in dark mode](docs/screenshots/rules-dark.png) | ![Results page in dark mode](docs/screenshots/results-dark.png) |
-| **Dark mode** — rules | **Dark mode** — results |
+| ![Home page, light theme](docs/screenshots/home.png) | ![Home page, dark theme](docs/screenshots/home-dark.png) |
+| **Home** — start or join a group | |
+| ![Rules page, light theme](docs/screenshots/rules.png) | ![Rules page, dark theme](docs/screenshots/rules-dark.png) |
+| **Rules** — search, filter and vote on every rule | |
+| ![Rule detail, light theme](docs/screenshots/rule-detail.png) | ![Rule detail, dark theme](docs/screenshots/rule-detail-dark.png) |
+| **Rule detail** — description, examples, options and the group's tally | |
+| ![Results page, light theme](docs/screenshots/results.png) | ![Results page, dark theme](docs/screenshots/results-dark.png) |
+| **Results** — consensus per rule and the generated `.editorconfig` | |
+| ![Group page, light theme](docs/screenshots/group.png) | ![Group page, dark theme](docs/screenshots/group-dark.png) |
+| **Group** — members, invite link and admin tools | |
 
 ## Tech stack
 
