@@ -54,7 +54,7 @@ export function decodeDocsText(text) {
  * `\|`) stays escaped as `\|`, so it is not read as a column break.
  * app/utils/prose.ts turns it back into a literal `|` at render time.
  */
-export function decodeDocsProse(text) {
+export function decodeDocsTextKeepingTablePipes(text) {
   const PIPE = '\u0001'
   const protectedText = text.replace(/^[ \t]*\|.*$/gm, (row) =>
     row.replace(/&#124;|&#x7c;|\\\|/gi, PIPE),
