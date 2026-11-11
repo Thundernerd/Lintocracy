@@ -102,11 +102,11 @@ export function renderProse(input?: string): string {
     if (startsTable(line, lines[i + 1])) {
       flushPara()
       flushList()
-      const rows: string[] = []
-      i += 2
-      while (i < lines.length && isTableRow(lines[i]!)) rows.push(lines[i++]!)
-      i--
-      out.push(renderTable(line, rows))
+      // Body rows run from after the separator to the first non-table line.
+      let end = i + 2
+      while (end < lines.length && isTableRow(lines[end]!)) end++
+      out.push(renderTable(line, lines.slice(i + 2, end)))
+      i = end - 1
     } else if (/^[-*]\s+/.test(line)) {
       flushPara()
       list.push(line.replace(/^[-*]\s+/, ''))
