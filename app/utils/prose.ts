@@ -4,8 +4,8 @@ const escapeHtml = (s: string) =>
 /** Markdown escapes (`\*`, `\_`) become entities so the emphasis rules skip them. */
 const escapedChar: Record<string, string> = { '*': '&#42;', '_': '&#95;', '\\': '&#92;' }
 
-/** Bold and emphasis for a run of text that contains no code spans. */
-function emphasis(s: string): string {
+/** Renders bold and emphasis in text whose code spans are already replaced by placeholders. */
+function renderEmphasis(s: string): string {
   return s
     .replace(/\\([*_\\])/g, (_, c: string) => escapedChar[c]!)
     .replace(/\*\*(?!\s)([^*]+?)(?<!\s)\*\*/g, '<strong>$1</strong>')
@@ -20,10 +20,17 @@ function emphasis(s: string): string {
  */
 export function renderInlineProse(input?: string): string {
   if (!input) return ''
-  return escapeHtml(input)
-    .split(/(`[^`]+`)/)
-    .map((part, i) => (i % 2 ? `<code>${part.slice(1, -1)}</code>` : emphasis(part)))
-    .join('')
+  // Swap code spans for placeholders so emphasis can still wrap them
+  // (`**bold `code`**`) without ever looking inside them.
+  const codeSpans: string[] = []
+  const withPlaceholders = escapeHtml(input).replace(/`([^`]+)`/g, (_, code: string) => {
+    codeSpans.push(`<code>${code}</code>`)
+    return `\u0000${codeSpans.length - 1}\u0000`
+  })
+  return renderEmphasis(withPlaceholders).replace(
+    /\u0000(\d+)\u0000/g,
+    (_, i: string) => codeSpans[Number(i)]!,
+  )
 }
 
 /**
