@@ -24,7 +24,7 @@ const NAMED_ENTITIES = {
  * Decodes HTML entities (`&#39;`, `&#x27;`, `&lt;`, `&mdash;`, ...) in one pass,
  * so `&amp;lt;` becomes `&lt;` rather than `<`. Unknown named entities are kept.
  */
-export function decodeEntities(text) {
+function decodeEntities(text) {
   return text.replace(/&(#\d+|#x[\da-f]+|[a-z][a-z\d]*);/gi, (entity, name) => {
     if (name[0] === '#') {
       const code =
@@ -35,8 +35,12 @@ export function decodeEntities(text) {
   })
 }
 
-/** Drops markdown backslash escapes before `<`, `>` and `|` (`Span\<T>` -> `Span<T>`). */
-export function unescapeMarkdown(text) {
+/**
+ * Drops markdown backslash escapes before `<`, `>` and `|` (`Span\<T>` -> `Span<T>`).
+ * `\*`, `\_` and `\\` stay: the UI renders emphasis, so app/utils/prose.ts
+ * resolves those at render time.
+ */
+function unescapeMarkdown(text) {
   return text.replace(/\\([<>|])/g, '$1')
 }
 
