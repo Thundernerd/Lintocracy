@@ -155,8 +155,10 @@ Lintocracy used to be called Rule Wars, and stored its database at `.data/rule-w
   ```
 
   The project name is the directory holding `docker-compose.yml`, unless you set one. On
-  startup the app renames the database file inside the volume. Remove the old volume once you
-  have checked your groups are there.
+  startup the app renames the database file inside the volume. If the new container already
+  ran before the copy, it created an empty `lintocracy.db` that wins over the copied
+  `rule-wars.db`: stop it, delete that empty `lintocracy.db` from the new volume, and start it again.
+  Remove the old volume once you have checked your groups are there.
 
 ## API
 
