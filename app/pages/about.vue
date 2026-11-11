@@ -10,7 +10,7 @@ const severities = [
 <template>
   <UContainer class="py-10 max-w-3xl">
     <h1 class="text-2xl">About Rule Wars</h1>
-    <div class="prose dark:prose-invert mt-4 max-w-none">
+    <div class="mt-4">
       <p class="text-muted">
         Rule Wars is a team tool for deciding which of Microsoft's official C#
         analyzer rules to enable, and at what severity. Create a group, invite your
