@@ -2,9 +2,10 @@
 // Microsoft docs clone in ./code-analysis. Run: node scripts/enrich-rules.mjs
 import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import { dirname, resolve, basename } from 'node:path'
-import { decodeDocsText, formatXref } from './text.mjs'
+import { decodeDocsText } from './text.mjs'
+import { section, stripMarkdown, cleanText, parseOptions } from './docs-markdown.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
@@ -15,61 +16,6 @@ const DOCS = resolve(ROOT, 'code-analysis')
 
 function stripFrontmatter(md) {
   return md.replace(/^---\n[\s\S]*?\n---\n/, '')
-}
-
-const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-/** Returns the raw body of the first `## <name>` section (until the next `## `). */
-function section(md, names) {
-  const padded = '\n' + md
-  for (const name of names) {
-    const re = new RegExp(`\\n##\\s+${escapeRe(name)}\\s*\\n([\\s\\S]*?)(?=\\n##\\s|$)`)
-    const m = padded.match(re)
-    if (m) return m[1].trim()
-  }
-  return undefined
-}
-
-/** Removes fenced code blocks from a chunk of markdown. */
-function stripCodeFences(text) {
-  return text.replace(/```[\s\S]*?```/g, '').replace(/:::[\s\S]*?:::/g, '')
-}
-
-/**
- * Strips docs markdown down to readable text (keeps inline `code`) without
- * decoding entities, so it is safe to run again on already-cleaned text.
- */
-function stripMarkdown(raw) {
-  if (!raw) return undefined
-  let t = stripCodeFences(raw)
-  // Remove include directives, e.g. [!INCLUDE [label](path.md)].
-  t = t.replace(/\[!INCLUDE\b[\s\S]*?\)\]/gi, '')
-  // Drop note/tip/warning callout markers but keep their text (allow indent).
-  t = t.replace(/^\s*>\s*\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*$/gim, '')
-  t = t.replace(/^\s*>\s?/gm, '')
-  // Remove zone/moniker pivots, e.g. :::zone pivot="..." and :::zone-end.
-  t = t.replace(/^\s*:::.*$/gm, '')
-  // <xref:System.Foo.Bar*?displayProperty=...> -> System.Foo.Bar (tolerate a missing `>`),
-  // with generic arity spelled out (List`1 -> List<T>) so no backtick is left behind.
-  t = t.replace(/<xref:([^>]+)>?/gi, (_, target) => formatXref(target))
-  // Markdown links [text](url) -> text
-  t = t.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-  // Image / include directives
-  t = t.replace(/:::.*$/gm, '')
-  t = t.replace(/<!--.*?-->/gs, '')
-  // Bullet markers kept; collapse excess whitespace.
-  t = t.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
-  return t || undefined
-}
-
-/**
- * Converts raw docs markdown to readable plain text, decoding entities and
- * backslash escapes (&#39;, &lt;, &mdash;, \<T\>) to literal characters.
- * Decode exactly once: text that is already clean goes through stripMarkdown.
- */
-function cleanText(raw) {
-  const t = stripMarkdown(raw)
-  return t && (decodeDocsText(t) || undefined)
 }
 
 /** Parses the bold property table that follows the page H1. */
@@ -133,67 +79,6 @@ function applyExamples(out, md, sectionNames) {
 
   out.example = blocks.join('\n\n')
   delete out.examples
-}
-
-/**
- * Whether a raw "Option values" cell is a literal `.editorconfig` value: a
- * single code span (`true`) or one bare token. Anything else is prose that
- * describes the accepted values ("One or more C# modifiers, such as ...").
- */
-function isLiteralValueCell(cell) {
-  return /^`[^`]+`$/.test(cell) || /^[^\s`]+$/.test(cell)
-}
-
-/** Parses the `## Options` section into structured option blocks (style rules). */
-export function parseOptions(md) {
-  const body = section(md, ['Options'])
-  if (!body) return undefined
-  const blocks = body.split(/^###\s+/m).slice(1)
-  const options = []
-
-  for (const block of blocks) {
-    const rows = [...block.matchAll(/^\|(.+)\|\s*$/gm)].map((m) =>
-      m[1].split('|').map((c) => c.trim()),
-    )
-    let name
-    let defaultValue
-    const values = []
-    let inValues = false
-    // A prose cell means the option takes values the docs cannot enumerate.
-    let freeForm = false
-
-    for (const cols of rows) {
-      const label = (cols[0] || '').replace(/\*/g, '').trim()
-      const raw = (cols[1] || '').trim()
-      const v = raw.replace(/`/g, '').trim()
-      const desc = cleanText((cols[2] || '').trim()) || undefined
-      const addValue = () => {
-        if (!v) return
-        if (isLiteralValueCell(raw)) values.push({ value: v, description: desc })
-        else freeForm = true
-      }
-      if (/^Option name/i.test(label)) {
-        name = v
-        inValues = false
-      } else if (/^Option values/i.test(label)) {
-        inValues = true
-        addValue()
-      } else if (/^Default option value/i.test(label)) {
-        defaultValue = v
-        inValues = false
-      } else if (label === '' && inValues) {
-        addValue()
-      } else if (label && !/^(Property|---)/i.test(label)) {
-        inValues = false
-      }
-    }
-
-    if (name) {
-      options.push({ name, defaultValue, values: values.length && !freeForm ? values : undefined })
-    }
-  }
-
-  return options.length ? options : undefined
 }
 
 function docFileFor(rule) {
@@ -275,10 +160,7 @@ async function main() {
   console.log(`Enriched ${enriched} rules from docs (${missing} missing local page).`)
 }
 
-// Run only as a script, so tests can import the parsers without rewriting the catalog.
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((err) => {
-    console.error(err)
-    process.exit(1)
-  })
-}
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
