@@ -1,6 +1,7 @@
 import { createClient, type Client } from '@libsql/client'
 import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
+import { migrateLegacyDatabaseFile } from './legacyFile'
 
 let _db: LibSQLDatabase<typeof schema> | undefined
 let _client: Client | undefined
@@ -33,6 +34,7 @@ export async function ensureSchema() {
     const { dirname } = await import('node:path')
     const path = url.slice('file:'.length)
     await mkdir(dirname(path), { recursive: true }).catch(() => {})
+    await migrateLegacyDatabaseFile(path)
   }
 
   await client().execute(`
