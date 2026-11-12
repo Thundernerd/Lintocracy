@@ -9,6 +9,12 @@ import { deleteProseOptionVotes } from './proseOptionVotes'
 let _db: LibSQLDatabase<typeof schema> | undefined
 let _client: Client | undefined
 
+/**
+ * How long, in ms, a statement waits for a lock another connection holds on a local database
+ * file (a backup, the sqlite3 CLI, a second app process) before failing with `SQLITE_BUSY`.
+ */
+const BUSY_TIMEOUT_MS = 5000
+
 /** Gets a local database file ready before the client first opens it. */
 function prepareDatabaseFile(url: string) {
   if (!url.startsWith('file:')) return
@@ -21,7 +27,7 @@ function client() {
   if (!_client) {
     const url = useRuntimeConfig().databaseUrl as string
     prepareDatabaseFile(url)
-    _client = createClient({ url })
+    _client = createClient({ url, timeout: BUSY_TIMEOUT_MS })
   }
   return _client
 }
