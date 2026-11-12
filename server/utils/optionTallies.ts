@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 import type { OptionTally } from '#shared/types/rule'
 import { computeOptionTally } from '#shared/utils/consensus'
+import { isAcceptedOptionValue } from '#shared/utils/optionValue'
 import { useDb } from '../db'
 import { optionVotes } from '../db/schema'
 import { rules } from '../data/rules'
@@ -31,7 +32,10 @@ export async function buildAllOptionTallies(groupId: string): Promise<OptionTall
           rule.id,
           opt.name,
           opt.defaultValue,
-          byOption.get(optionKey(rule.id, opt.name)) ?? [],
+          // Votes stored before the catalog dropped their value no longer count.
+          (byOption.get(optionKey(rule.id, opt.name)) ?? []).filter((v) =>
+            isAcceptedOptionValue(opt, v.value),
+          ),
         ),
       )
     }

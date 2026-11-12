@@ -10,6 +10,15 @@ export function acceptsTypedValues(option: RuleOption): boolean {
 }
 
 /**
+ * Whether an option currently accepts a value: any value when voters may type
+ * their own, otherwise only one of its documented values. A vote stored before
+ * the catalog dropped a value fails this check.
+ */
+export function isAcceptedOptionValue(option: RuleOption, value: string): boolean {
+  return acceptsTypedValues(option) || !!option.values?.some((v) => v.value === value)
+}
+
+/**
  * Why a typed option value cannot go on an `.editorconfig` line, or null when
  * it can once trimmed. A newline would split the line, and Roslyn reads `#`
  * or `;` as the start of a comment, cutting the value short.
