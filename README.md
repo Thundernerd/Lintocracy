@@ -62,6 +62,7 @@ server/
   data/curated.ts       # hand-curated rules (rich descriptions + examples)
   db/                   # Drizzle schema + connection (schema is created on startup)
   utils/                # group/membership cookies, admin passwords, tallies
+  tests/                # API tests: real route handlers on a temporary SQLite file
 shared/
   constants/app.ts      # app name and default tab title
   constants/database.ts # SQLite file location
@@ -130,7 +131,8 @@ database is the SQLite file at `.data/lintocracy.db`, so keep that directory on 
 
 ### Docker
 
-Every push to `main` builds and publishes a Docker image (`.github/workflows/docker.yml`).
+Every push to `main` or a `v*` tag builds and publishes a Docker image
+(`.github/workflows/docker.yml`); you can also run the workflow by hand from the Actions tab.
 `docker-compose.yml` runs it with the database on a named volume:
 
 ```bash
