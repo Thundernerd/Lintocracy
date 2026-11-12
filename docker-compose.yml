@@ -12,14 +12,13 @@ services:
       - lintocracy-data:/app/.data
     restart: unless-stopped
     healthcheck:
+      # The image has no wget or curl, so check with Node's global fetch.
       test:
         [
           "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://127.0.0.1:${PORT:-3000}/",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:' + (process.env.PORT || 3000) + '/').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
         ]
       interval: 30s
       timeout: 5s
