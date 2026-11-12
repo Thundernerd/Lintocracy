@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { OptionTally, RuleTally } from '#shared/types/rule'
-import { startApi } from './api'
+import { startApi } from './apiHarness'
 
 type Browser = ReturnType<typeof api.browser>
 

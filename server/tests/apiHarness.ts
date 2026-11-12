@@ -8,6 +8,9 @@ import { vi } from 'vitest'
  * Serves the real API route handlers from an h3 app backed by a fresh SQLite file, so tests
  * can call endpoints over HTTP the way the app does. Nitro's auto-imports are provided as
  * globals: the h3 utilities themselves, and `useRuntimeConfig` pointing at the test database.
+ *
+ * Tests live in `server/tests` rather than beside the handlers because Nitro would serve any
+ * file under `server/api` as a route.
  */
 export async function startApi() {
   const databaseUrl = `file:${join(mkdtempSync(join(tmpdir(), 'lintocracy-test-')), 'test.db')}`
@@ -58,8 +61,8 @@ export async function startApi() {
       )
       for (const cookie of res.headers.getSetCookie()) {
         const [pair] = cookie.split(';')
-        const eq = pair!.indexOf('=')
-        cookies.set(pair!.slice(0, eq), pair!.slice(eq + 1))
+        const nameEnd = pair!.indexOf('=')
+        cookies.set(pair!.slice(0, nameEnd), pair!.slice(nameEnd + 1))
       }
       if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${await res.text()}`)
       return (await res.json()) as T
