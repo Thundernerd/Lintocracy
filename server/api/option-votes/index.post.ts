@@ -10,7 +10,12 @@ const bodySchema = z.object({
   groupId: z.string(),
   ruleId: z.string(),
   optionName: z.string(),
-  value: z.string(),
+  // Trimmed, non-empty and on one line, so the `.editorconfig` line stays well formed.
+  value: z
+    .string()
+    .refine((v) => !/[\r\n]/.test(v), 'Value must be on a single line')
+    .trim()
+    .min(1, 'Value must not be empty'),
 })
 
 export default defineEventHandler(async (event) => {
@@ -32,8 +37,8 @@ export default defineEventHandler(async (event) => {
       statusMessage: `Unknown option: ${ruleId}.${optionName}`,
     })
   }
-  // Only accept documented values when the option enumerates them.
-  if (option.values?.length && !option.values.some((v) => v.value === value)) {
+  // Only accept documented values when the option enumerates them and takes nothing else.
+  if (option.values?.length && !option.freeForm && !option.values.some((v) => v.value === value)) {
     throw createError({
       statusCode: 400,
       statusMessage: `Invalid value for ${optionName}: ${value}`,
