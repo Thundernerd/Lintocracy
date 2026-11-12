@@ -30,7 +30,7 @@ test('an Options table whose "Option values" cell is a description yields a free
   ])
 })
 
-test('a described value beside literal values is dropped and the literals are kept', () => {
+test('a described value beside literal values is dropped, the literals are kept and the option is flagged free-form', () => {
   const md = optionsPage({
     name: 'dotnet_remove_unnecessary_suppression_exclusions',
     rows: [
@@ -49,6 +49,7 @@ test('a described value beside literal values is dropped and the literals are ke
         { value: 'all', description: 'Disables the rule (all rule IDs excluded)' },
         { value: 'none', description: 'Enables the rule for all rules (no exclusions)' },
       ],
+      freeForm: true,
     },
   ])
 })

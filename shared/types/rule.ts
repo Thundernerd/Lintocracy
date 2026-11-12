@@ -32,7 +32,10 @@ export interface RuleOptionValue {
 export interface RuleOption {
   name: string
   defaultValue?: string
+  /** Documented literal values. Absent when the docs only describe the values in prose. */
   values?: RuleOptionValue[]
+  /** True when the option lists `values` but also accepts other values (e.g. a list of rule IDs). */
+  freeForm?: boolean
 }
 
 export type SeverityBreakdown = Record<Severity, number>
