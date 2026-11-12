@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import type { GroupContext } from '#shared/types/group'
 import { useDb } from '../../../db'
 import { groups, members } from '../../../db/schema'
@@ -14,10 +14,7 @@ export default defineEventHandler(async (event): Promise<GroupContext> => {
     throw createError({ statusCode: 404, statusMessage: 'Group not found' })
   }
 
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(members)
-    .where(eq(members.groupId, id))
+  const memberCount = await db.$count(members, eq(members.groupId, id))
 
   const memberId = getMemberCookie(event, id)
   let me: GroupContext['me'] = null
@@ -35,7 +32,7 @@ export default defineEventHandler(async (event): Promise<GroupContext> => {
   return {
     id: group.id,
     name: group.name,
-    memberCount: Number(count),
+    memberCount,
     me,
     isAdmin: admin,
     inviteToken: admin ? group.inviteToken : undefined,
