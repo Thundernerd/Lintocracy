@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import type { GroupSummary } from '#shared/types/group'
 import { useDb } from '../../../db'
 import { groups, members } from '../../../db/schema'
@@ -17,10 +17,7 @@ export default defineEventHandler(async (event): Promise<GroupSummary> => {
     throw createError({ statusCode: 404, statusMessage: 'Invite not found' })
   }
 
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(members)
-    .where(eq(members.groupId, group.id))
+  const memberCount = await db.$count(members, eq(members.groupId, group.id))
 
-  return { id: group.id, name: group.name, memberCount: Number(count) }
+  return { id: group.id, name: group.name, memberCount }
 })

@@ -97,7 +97,7 @@ const isDark = computed({
               color="neutral"
               variant="ghost"
               aria-label="Toggle color mode"
-              @click="isDark = !isDark"
+              @click="() => { isDark = !isDark }"
             />
             <template #fallback>
               <div class="size-8" />
