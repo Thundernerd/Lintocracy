@@ -5,7 +5,7 @@ import { optionVotes } from '../../db/schema'
 import { getMemberId } from '../../utils/membership'
 import { assertGroupExists } from '../../utils/group'
 import { rules } from '../../data/rules'
-import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
+import { isAcceptedOptionValue, typedOptionValueError } from '#shared/utils/optionValue'
 
 const bodySchema = z.object({
   groupId: z.string(),
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: `Unknown option: ${ruleId}.${optionName}`,
     })
   }
-  if (!acceptsTypedValues(option) && !option.values?.some((v) => v.value === value)) {
+  if (!isAcceptedOptionValue(option, value)) {
     throw createError({
       statusCode: 400,
       statusMessage: `Invalid value for ${optionName}: ${value}`,

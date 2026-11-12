@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { RuleOption, RuleOptionValue } from '#shared/types/rule'
-import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
+import {
+  acceptsTypedValues,
+  isDocumentedOptionValue,
+  typedOptionValueError,
+} from '#shared/utils/optionValue'
 
 const props = defineProps<{ ruleId: string; option: RuleOption }>()
 
@@ -39,7 +43,7 @@ const choices = computed<RuleOptionValue[]>(() => {
  * default, or empty when the documented values already have their own buttons.
  */
 function initialDraft(value: string | null) {
-  if (value && !props.option.values?.some((v) => v.value === value)) return value
+  if (value && !isDocumentedOptionValue(props.option, value)) return value
   return hasDocumentedValues.value ? '' : (props.option.defaultValue ?? '')
 }
 const draft = ref('')
