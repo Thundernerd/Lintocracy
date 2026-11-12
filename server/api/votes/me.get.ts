@@ -10,7 +10,7 @@ export default defineEventHandler(async (event): Promise<MyVote[]> => {
   const voterId = getMemberCookie(event, groupId)
   if (!voterId) return []
 
-  const db = useDb()
+  const db = await useDb()
   const rows = await db
     .select({ ruleId: votes.ruleId, vote: votes.vote, severity: votes.severity })
     .from(votes)

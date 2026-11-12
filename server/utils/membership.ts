@@ -41,7 +41,7 @@ export function getMemberCookie(event: H3Event, groupId: string): string | undef
 export async function getMemberId(event: H3Event, groupId: string): Promise<string> {
   const memberId = getMemberCookie(event, groupId)
   if (memberId) {
-    const db = useDb()
+    const db = await useDb()
     const found = await db
       .select({ id: members.id })
       .from(members)

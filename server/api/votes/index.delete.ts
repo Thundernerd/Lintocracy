@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
   await assertGroupExists(groupId)
   const voterId = await getMemberId(event, groupId)
-  const db = useDb()
+  const db = await useDb()
 
   await db
     .delete(votes)

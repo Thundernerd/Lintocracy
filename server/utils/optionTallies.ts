@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 import type { OptionTally } from '#shared/types/rule'
 import { computeOptionTally } from '#shared/utils/consensus'
+import { isAcceptedOptionValue } from '#shared/utils/optionValue'
 import { useDb } from '../db'
 import { optionVotes } from '../db/schema'
 import { rules } from '../data/rules'
@@ -9,7 +10,7 @@ const optionKey = (ruleId: string, optionName: string) => `${ruleId}::${optionNa
 
 /** Loads a group's option votes and computes a tally per documented option. */
 export async function buildAllOptionTallies(groupId: string): Promise<OptionTally[]> {
-  const db = useDb()
+  const db = await useDb()
   const rows = await db
     .select({ ruleId: optionVotes.ruleId, optionName: optionVotes.optionName, value: optionVotes.value })
     .from(optionVotes)
@@ -26,14 +27,11 @@ export async function buildAllOptionTallies(groupId: string): Promise<OptionTall
   const tallies: OptionTally[] = []
   for (const rule of rules) {
     for (const opt of rule.options ?? []) {
-      tallies.push(
-        computeOptionTally(
-          rule.id,
-          opt.name,
-          opt.defaultValue,
-          byOption.get(optionKey(rule.id, opt.name)) ?? [],
-        ),
+      // Votes stored before the catalog dropped their value no longer count.
+      const countedVotes = (byOption.get(optionKey(rule.id, opt.name)) ?? []).filter((v) =>
+        isAcceptedOptionValue(opt, v.value),
       )
+      tallies.push(computeOptionTally(rule.id, opt, countedVotes))
     }
   }
   return tallies

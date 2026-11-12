@@ -5,7 +5,7 @@ import { groups, members } from '../../../db/schema'
 
 export default defineEventHandler(async (event): Promise<GroupSummary> => {
   const token = getRouterParam(event, 'token')!
-  const db = useDb()
+  const db = await useDb()
 
   const [group] = await db
     .select({ id: groups.id, name: groups.name })

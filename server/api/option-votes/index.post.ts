@@ -5,7 +5,7 @@ import { optionVotes } from '../../db/schema'
 import { getMemberId } from '../../utils/membership'
 import { assertGroupExists } from '../../utils/group'
 import { rules } from '../../data/rules'
-import { acceptsTypedValues, normaliseOptionValue, typedOptionValueError } from '#shared/utils/optionValue'
+import { isAcceptedOptionValue, normaliseOptionValue, typedOptionValueError } from '#shared/utils/optionValue'
 
 const bodySchema = z.object({
   groupId: z.string(),
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
   if (!value) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid option vote', message: 'Value must not be empty' })
   }
-  if (!acceptsTypedValues(option) && !option.values?.some((v) => v.value === value)) {
+  if (!isAcceptedOptionValue(option, value)) {
     throw createError({
       statusCode: 400,
       statusMessage: `Invalid value for ${optionName}: ${value}`,
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
 
   await assertGroupExists(groupId)
   const voterId = await getMemberId(event, groupId)
-  const db = useDb()
+  const db = await useDb()
   const now = Date.now()
 
   const existing = await db
