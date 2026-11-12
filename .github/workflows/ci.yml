@@ -11,7 +11,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded PR runs, but let every push to main get its own result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test-and-build:
@@ -21,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Node 22 matches the Docker image; `npm test` needs >= 21 for the `node --test` glob.
+      # Node 22 matches the Docker image; Nuxt, Vite and Vitest need >= 22.12.
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
