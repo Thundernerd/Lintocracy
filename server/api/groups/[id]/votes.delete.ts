@@ -7,13 +7,19 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   requireAdmin(event, id)
 
-  const db = useDb()
-
-  const cleared = await db.$count(votes, eq(votes.groupId, id))
-  const clearedOptions = await db.$count(optionVotes, eq(optionVotes.groupId, id))
-
-  await db.delete(votes).where(eq(votes.groupId, id))
-  await db.delete(optionVotes).where(eq(optionVotes.groupId, id))
+  // One transaction, so both deletes happen or neither does, and the counts are the rows
+  // actually deleted (a vote cast mid-request is either cleared and counted, or kept).
+  const { cleared, clearedOptions } = await useDb().transaction(async (tx) => {
+    const deletedVotes = await tx
+      .delete(votes)
+      .where(eq(votes.groupId, id))
+      .returning({ id: votes.id })
+    const deletedOptionVotes = await tx
+      .delete(optionVotes)
+      .where(eq(optionVotes.groupId, id))
+      .returning({ id: optionVotes.id })
+    return { cleared: deletedVotes.length, clearedOptions: deletedOptionVotes.length }
+  })
 
   return { cleared, clearedOptions }
 })
