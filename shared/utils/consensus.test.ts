@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { RuleOption, SeverityBreakdown } from '#shared/types/rule'
-import { computeOptionTally, deriveConsensus } from './consensus'
+import type { MyVote, RuleOption, SeverityBreakdown } from '#shared/types/rule'
+import { computeOptionTally, computeTally, deriveConsensus } from './consensus'
 
 const option: RuleOption = {
   name: 'csharp_new_line_before_open_brace',
@@ -120,5 +120,49 @@ describe('deriveConsensus', () => {
       consensusEnabled: true,
       consensusSeverity: 'suggestion',
     })
+  })
+})
+
+describe('computeTally', () => {
+  it('counts yes, no and total votes, and builds the severity breakdown from yes votes only', () => {
+    const tally = computeTally({ id: 'CA1822' }, [
+      { vote: 'yes', severity: 'warning' },
+      { vote: 'no', severity: 'error' },
+      { vote: 'yes', severity: 'warning' },
+      { vote: 'no', severity: null },
+      { vote: 'yes', severity: 'error' },
+    ])
+    expect(tally).toEqual({
+      ruleId: 'CA1822',
+      yes: 3,
+      no: 2,
+      total: 5,
+      severityBreakdown: { none: 0, suggestion: 0, warning: 2, error: 1 },
+      consensusEnabled: true,
+      consensusSeverity: 'warning',
+    })
+  })
+
+  it("counts a yes vote with no severity as 'suggestion'", () => {
+    const tally = computeTally({ id: 'CA1822' }, [
+      { vote: 'yes', severity: null },
+      { vote: 'yes', severity: null },
+      { vote: 'yes', severity: 'error' },
+    ])
+    expect(tally.severityBreakdown).toEqual({ none: 0, suggestion: 2, warning: 0, error: 1 })
+    expect(tally.consensusSeverity).toBe('suggestion')
+  })
+
+  it('passes the tie-break options on to the consensus', () => {
+    // A yes/no tie whose yes voters are split between warning and error.
+    const votes: Pick<MyVote, 'vote' | 'severity'>[] = [
+      { vote: 'yes', severity: 'warning' },
+      { vote: 'yes', severity: 'error' },
+      { vote: 'no', severity: null },
+      { vote: 'no', severity: null },
+    ]
+    const tally = computeTally({ id: 'CA1822' }, votes, { yesNoTie: 'include', severityTie: 'lowest' })
+    expect(tally.consensusEnabled).toBe(true)
+    expect(tally.consensusSeverity).toBe('warning')
   })
 })
