@@ -12,6 +12,7 @@ consensus `.editorconfig` you can drop into any C# project.
 - **Vote Yes** to enable a rule and choose a severity (`suggestion` / `warning` / `error`).
 - **Vote No** to leave a rule off (maps to `none`).
 - **Vote on options**: for rules with configurable `.editorconfig` options, pick the value you prefer.
+  Options that take any value (such as IDE0036's modifier order) let you type one, or join a value someone else typed.
 - **Change your mind**: click your current choice again, or use *Remove vote*, to withdraw a vote.
 - Your group's votes aggregate into a generated `.editorconfig`:
   majority Yes enables a rule, the most-voted severity wins, and the most-voted value wins for each option.
