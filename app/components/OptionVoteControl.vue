@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { RuleOption } from '#shared/types/rule'
+import type { RuleOption, RuleOptionValue } from '#shared/types/rule'
+import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
 
 const props = defineProps<{ ruleId: string; option: RuleOption }>()
 
@@ -14,6 +15,51 @@ const consensus = computed(() => tally.value?.consensusValue ?? null)
 
 function count(value: string) {
   return tally.value?.counts[value] ?? 0
+}
+
+const hasDocumentedValues = computed(() => !!props.option.values?.length)
+const acceptsOther = computed(() => acceptsTypedValues(props.option))
+
+/** Documented values first, then typed values the group has voted for, most votes first. */
+const choices = computed<RuleOptionValue[]>(() => {
+  const documented = props.option.values ?? []
+  if (!acceptsOther.value) return documented
+  const known = new Set(documented.map((v) => v.value))
+  const typed = new Set(Object.keys(tally.value?.counts ?? {}).filter((v) => count(v) > 0))
+  if (myValue.value) typed.add(myValue.value)
+  const others = [...typed]
+    .filter((v) => !known.has(v))
+    .sort((a, b) => count(b) - count(a) || a.localeCompare(b))
+    .map((value) => ({ value }))
+  return [...documented, ...others]
+})
+
+/**
+ * The text input holds my typed vote. Without one it starts from the documented
+ * default, or empty when the documented values already have their own buttons.
+ */
+function initialDraft(value: string | null) {
+  if (value && !props.option.values?.some((v) => v.value === value)) return value
+  return hasDocumentedValues.value ? '' : (props.option.defaultValue ?? '')
+}
+const draft = ref('')
+watch(myValue, (value) => (draft.value = initialDraft(value)), { immediate: true })
+
+// An empty draft only disables the button; the hint already asks for a value.
+const draftError = computed(() => (draft.value.trim() ? typedOptionValueError(draft.value) : null))
+const canVoteTyped = computed(
+  () => !!draft.value.trim() && !draftError.value && draft.value.trim() !== myValue.value,
+)
+
+const hint = computed(() => {
+  if (hasDocumentedValues.value) return 'Or type another value.'
+  return choices.value.length
+    ? 'Type the value you prefer, or click one above to join it.'
+    : 'Type the value you prefer.'
+})
+
+async function voteTyped() {
+  if (canVoteTyped.value) await vote(draft.value.trim())
 }
 
 async function clear() {
@@ -69,9 +115,9 @@ async function vote(value: string) {
       </div>
     </div>
 
-    <div v-if="option.values?.length" class="flex flex-col gap-2">
+    <div v-if="choices.length" class="flex flex-col gap-2">
       <button
-        v-for="val in option.values"
+        v-for="val in choices"
         :key="val.value"
         type="button"
         :disabled="busy || !hasGroup"
@@ -106,6 +152,26 @@ async function vote(value: string) {
         <span class="shrink-0 text-xs text-muted tabular-nums">{{ count(val.value) }}</span>
       </button>
     </div>
+
+    <form v-if="acceptsOther" class="flex flex-col gap-1" @submit.prevent="voteTyped">
+      <div class="flex gap-2">
+        <UInput
+          v-model="draft"
+          :aria-label="`Value for ${option.name}`"
+          :placeholder="hasDocumentedValues ? 'Another value' : (option.defaultValue ?? 'Type a value')"
+          :disabled="busy || !hasGroup"
+          class="flex-1 font-mono"
+        />
+        <UButton
+          type="submit"
+          :disabled="busy || !hasGroup || !canVoteTyped"
+        >
+          {{ myValue ? 'Change vote' : 'Vote' }}
+        </UButton>
+      </div>
+      <p v-if="draftError" class="text-xs text-error">{{ draftError }}</p>
+      <p v-else class="text-xs text-muted">{{ hint }}</p>
+    </form>
   </div>
 </template>
 

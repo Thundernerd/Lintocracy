@@ -80,6 +80,7 @@ export function parseOptions(md) {
     let name
     let defaultValue
     const values = []
+    let hasProseValue = false
     let inValues = false
 
     for (const cols of rows) {
@@ -87,9 +88,11 @@ export function parseOptions(md) {
       const cell = (cols[1] || '').trim()
       const v = cell.replace(/`/g, '').trim()
       const desc = cleanText((cols[2] || '').trim()) || undefined
-      // Only literal cells are values; a prose cell describes values and is dropped.
+      // Only literal cells are values; a prose cell describes other accepted values and is dropped.
       const collectValueCell = () => {
-        if (v && isLiteralValueCell(cell)) values.push({ value: v, description: desc })
+        if (!v) return
+        if (isLiteralValueCell(cell)) values.push({ value: v, description: desc })
+        else hasProseValue = true
       }
       if (/^Option name/i.test(label)) {
         name = v
@@ -109,7 +112,11 @@ export function parseOptions(md) {
 
     // With no literal left, `values: undefined` makes the option free-form:
     // the API then accepts any value instead of checking it against a list.
-    if (name) options.push({ name, defaultValue, values: values.length ? values : undefined })
+    // Literals beside a prose cell are suggestions: `freeForm` accepts other values too.
+    if (!name) continue
+    const option = { name, defaultValue, values: values.length ? values : undefined }
+    if (values.length && hasProseValue) option.freeForm = true
+    options.push(option)
   }
 
   return options.length ? options : undefined
