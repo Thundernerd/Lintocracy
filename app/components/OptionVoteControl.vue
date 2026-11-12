@@ -34,12 +34,16 @@ const choices = computed<RuleOptionValue[]>(() => {
   return [...documented, ...others]
 })
 
-// Free-form options start from the documented default; documented choices are the buttons above.
-const draft = ref(hasDocumentedValues.value ? '' : (props.option.defaultValue ?? ''))
-// Show my typed vote in the input (now or once it loads); documented values have their own button.
-watch(myValue, (value) => {
-  if (value && !props.option.values?.some((v) => v.value === value)) draft.value = value
-}, { immediate: true })
+/**
+ * The text input holds my typed vote. Without one it starts from the documented
+ * default, or empty when the documented values already have their own buttons.
+ */
+function initialDraft(value: string | null) {
+  if (value && !props.option.values?.some((v) => v.value === value)) return value
+  return hasDocumentedValues.value ? '' : (props.option.defaultValue ?? '')
+}
+const draft = ref('')
+watch(myValue, (value) => (draft.value = initialDraft(value)), { immediate: true })
 
 // An empty draft only disables the button; the hint already asks for a value.
 const draftError = computed(() => (draft.value.trim() ? typedOptionValueError(draft.value) : null))
