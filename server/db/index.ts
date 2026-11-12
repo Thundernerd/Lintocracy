@@ -4,6 +4,7 @@ import { createClient, type Client } from '@libsql/client'
 import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 import { renameLegacyDatabaseFile } from './legacyDatabaseFile'
+import { deleteProseOptionVotes } from './proseOptionVotes'
 
 let _db: LibSQLDatabase<typeof schema> | undefined
 let _client: Client | undefined
@@ -33,8 +34,9 @@ export function useDb() {
 }
 
 /**
- * Creates the schema if it does not exist. Keeps local/dev setup zero-config;
- * for production with a managed DB this can be replaced by drizzle-kit migrations.
+ * Creates the schema if it does not exist, then deletes option votes for prose values the
+ * catalog no longer offers. Keeps local/dev setup zero-config; for production with a managed
+ * DB this can be replaced by drizzle-kit migrations.
  */
 export async function ensureSchema() {
   await client().execute(`
@@ -91,4 +93,6 @@ export async function ensureSchema() {
   await client().execute(
     'CREATE UNIQUE INDEX IF NOT EXISTS option_votes_group_rule_option_voter_idx ON option_votes (group_id, rule_id, option_name, voter_id)',
   )
+
+  await deleteProseOptionVotes(client())
 }
