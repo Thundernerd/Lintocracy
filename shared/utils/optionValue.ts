@@ -33,3 +33,8 @@ export function normaliseListValue(value: string): string {
     .filter(Boolean)
     .join(', ')
 }
+
+/** A typed option value as it is stored and tallied: trimmed, and a list normalised. */
+export function normaliseOptionValue(option: RuleOption, value: string): string {
+  return option.listValue ? normaliseListValue(value) : value.trim()
+}
