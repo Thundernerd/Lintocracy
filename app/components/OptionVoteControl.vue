@@ -16,6 +16,47 @@ function count(value: string) {
   return tally.value?.counts[value] ?? 0
 }
 
+/** Whether the option takes values beyond its documented ones (typed in by voters). */
+const acceptsOther = computed(() => !props.option.values?.length || !!props.option.freeForm)
+
+/** Documented values first, then typed values the group has voted for, most votes first. */
+const choices = computed(() => {
+  const documented = props.option.values ?? []
+  if (!acceptsOther.value) return documented
+  const known = new Set(documented.map((v) => v.value))
+  const typed = new Set(Object.keys(tally.value?.counts ?? {}).filter((v) => count(v) > 0))
+  if (myValue.value) typed.add(myValue.value)
+  const others = [...typed]
+    .filter((v) => !known.has(v))
+    .sort((a, b) => count(b) - count(a) || a.localeCompare(b))
+    .map((value) => ({ value, description: undefined }))
+  return [...documented, ...others]
+})
+
+// Free-form options start from the documented default; documented choices are the buttons above.
+const draft = ref(props.option.values?.length ? '' : (props.option.defaultValue ?? ''))
+// Show my typed vote in the input (now or once it loads); documented values have their own button.
+watch(myValue, (value) => {
+  if (value && !props.option.values?.some((v) => v.value === value)) draft.value = value
+}, { immediate: true })
+
+/** Mirrors the API: one line, trimmed, not empty. */
+const draftError = computed(() => (/[\r\n]/.test(draft.value) ? 'Use a single line' : null))
+const canVoteTyped = computed(
+  () => !draftError.value && !!draft.value.trim() && draft.value.trim() !== myValue.value,
+)
+
+const hint = computed(() => {
+  if (props.option.values?.length) return 'Or type another value.'
+  return choices.value.length
+    ? 'Type the value you prefer, or click one above to join it.'
+    : 'Type the value you prefer.'
+})
+
+async function voteTyped() {
+  if (canVoteTyped.value) await vote(draft.value.trim())
+}
+
 async function clear() {
   busy.value = true
   try {
@@ -69,9 +110,9 @@ async function vote(value: string) {
       </div>
     </div>
 
-    <div v-if="option.values?.length" class="flex flex-col gap-2">
+    <div v-if="choices.length" class="flex flex-col gap-2">
       <button
-        v-for="val in option.values"
+        v-for="val in choices"
         :key="val.value"
         type="button"
         :disabled="busy || !hasGroup"
@@ -106,6 +147,26 @@ async function vote(value: string) {
         <span class="shrink-0 text-xs text-muted tabular-nums">{{ count(val.value) }}</span>
       </button>
     </div>
+
+    <form v-if="acceptsOther" class="flex flex-col gap-1" @submit.prevent="voteTyped">
+      <div class="flex gap-2">
+        <UInput
+          v-model="draft"
+          :aria-label="`Value for ${option.name}`"
+          :placeholder="option.values?.length ? 'Another value' : (option.defaultValue ?? 'Type a value')"
+          :disabled="busy || !hasGroup"
+          class="flex-1 font-mono"
+        />
+        <UButton
+          type="submit"
+          :disabled="busy || !hasGroup || !canVoteTyped"
+        >
+          {{ myValue ? 'Change vote' : 'Vote' }}
+        </UButton>
+      </div>
+      <p v-if="draftError" class="text-xs text-error">{{ draftError }}</p>
+      <p v-else class="text-xs text-muted">{{ hint }}</p>
+    </form>
   </div>
 </template>
 
