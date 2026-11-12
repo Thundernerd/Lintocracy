@@ -62,6 +62,7 @@ server/
   data/curated.ts       # hand-curated rules (rich descriptions + examples)
   db/                   # Drizzle schema + connection (schema is created on startup)
   utils/                # group/membership cookies, admin passwords, tallies
+  tests/                # API tests: real route handlers on a temporary SQLite file
 shared/
   constants/app.ts      # app name and default tab title
   constants/database.ts # SQLite file location
