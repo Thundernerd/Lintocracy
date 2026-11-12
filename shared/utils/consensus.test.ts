@@ -29,8 +29,13 @@ describe('computeOptionTally', () => {
     expect(tally.consensusValue).toBe('types')
   })
 
-  it('breaks a tie between values other than the default by picking the first in order', () => {
-    const tally = computeOptionTally('IDE0055', option, votes('types', 'none', 'types', 'none'))
+  it('breaks a tie between values other than the default by picking the alphabetically first', () => {
+    // Documented out of alphabetical order, so neither documented nor voting order decides.
+    const reordered: RuleOption = {
+      ...option,
+      values: [{ value: 'types' }, { value: 'none' }, { value: 'all' }],
+    }
+    const tally = computeOptionTally('IDE0055', reordered, votes('types', 'none', 'types', 'none'))
     expect(tally.consensusValue).toBe('none')
   })
 

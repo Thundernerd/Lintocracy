@@ -8,18 +8,18 @@ import {
   typedOptionValueError,
 } from './optionValue'
 
-const enumerated: RuleOption = {
+const enumeratedOption: RuleOption = {
   name: 'csharp_style_var_for_built_in_types',
   values: [{ value: 'true' }, { value: 'false' }],
 }
 
 describe('isDocumentedOptionValue', () => {
   it('is true for one of the option\'s documented values', () => {
-    expect(isDocumentedOptionValue(enumerated, 'false')).toBe(true)
+    expect(isDocumentedOptionValue(enumeratedOption, 'false')).toBe(true)
   })
 
   it('is false for a value the option does not document, even one a free-form option accepts', () => {
-    const option: RuleOption = { ...enumerated, freeForm: true }
+    const option: RuleOption = { ...enumeratedOption, freeForm: true }
     expect(isDocumentedOptionValue(option, 'maybe')).toBe(false)
   })
 
@@ -30,11 +30,11 @@ describe('isDocumentedOptionValue', () => {
 
 describe('isAcceptedOptionValue', () => {
   it('accepts a documented value of an enumerated option', () => {
-    expect(isAcceptedOptionValue(enumerated, 'true')).toBe(true)
+    expect(isAcceptedOptionValue(enumeratedOption, 'true')).toBe(true)
   })
 
   it('rejects an off-catalog value on an enumerated option', () => {
-    expect(isAcceptedOptionValue(enumerated, 'maybe')).toBe(false)
+    expect(isAcceptedOptionValue(enumeratedOption, 'maybe')).toBe(false)
   })
 
   it('accepts any value on an option that documents no values', () => {
