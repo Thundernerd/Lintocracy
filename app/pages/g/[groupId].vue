@@ -177,7 +177,7 @@ async function doClear() {
                 variant="subtle"
                 icon="i-lucide-trash-2"
                 :disabled="totalVotes === 0"
-                @click="confirmClear = true"
+                @click="() => { confirmClear = true }"
               >
                 Clear all votes
               </UButton>
@@ -208,7 +208,7 @@ async function doClear() {
       </template>
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
-          <UButton color="neutral" variant="ghost" @click="renameOpen = false">Cancel</UButton>
+          <UButton color="neutral" variant="ghost" @click="() => { renameOpen = false }">Cancel</UButton>
           <UButton :loading="renaming" icon="i-lucide-check" @click="doRename">Save</UButton>
         </div>
       </template>
@@ -223,7 +223,7 @@ async function doClear() {
       </template>
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
-          <UButton color="neutral" variant="ghost" @click="confirmClear = false">Cancel</UButton>
+          <UButton color="neutral" variant="ghost" @click="() => { confirmClear = false }">Cancel</UButton>
           <UButton color="error" icon="i-lucide-trash-2" :loading="clearing" @click="doClear">
             Yes, clear everything
           </UButton>
