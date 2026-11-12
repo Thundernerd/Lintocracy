@@ -4,7 +4,7 @@ import { createClient, type Client } from '@libsql/client'
 import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 import { renameLegacyDatabaseFile } from './legacyDatabaseFile'
-import { deleteProseOptionVotes } from './staleOptionVotes'
+import { deleteProseOptionVotes } from './proseOptionVotes'
 
 let _db: LibSQLDatabase<typeof schema> | undefined
 let _client: Client | undefined
