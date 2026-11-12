@@ -4,6 +4,7 @@ import { createClient, type Client } from '@libsql/client'
 import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from './schema'
 import { renameLegacyDatabaseFile } from './legacyDatabaseFile'
+import { deleteProseOptionVotes } from './staleOptionVotes'
 
 let _db: LibSQLDatabase<typeof schema> | undefined
 let _client: Client | undefined
@@ -91,4 +92,6 @@ export async function ensureSchema() {
   await client().execute(
     'CREATE UNIQUE INDEX IF NOT EXISTS option_votes_group_rule_option_voter_idx ON option_votes (group_id, rule_id, option_name, voter_id)',
   )
+
+  await deleteProseOptionVotes(client())
 }
