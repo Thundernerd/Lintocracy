@@ -9,6 +9,19 @@ export function acceptsTypedValues(option: RuleOption): boolean {
   return !option.values?.length || !!option.freeForm
 }
 
+/** Whether a value is one of the option's documented values. */
+export function isDocumentedOptionValue(option: RuleOption, value: string): boolean {
+  return !!option.values?.some((v) => v.value === value)
+}
+
+/**
+ * Whether an option accepts a value: any value when voters may type their own,
+ * otherwise only one of its documented values.
+ */
+export function isAcceptedOptionValue(option: RuleOption, value: string): boolean {
+  return acceptsTypedValues(option) || isDocumentedOptionValue(option, value)
+}
+
 /**
  * Why a typed option value cannot go on an `.editorconfig` line, or null when
  * it can once trimmed. A newline would split the line, and Roslyn reads `#`
