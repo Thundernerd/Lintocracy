@@ -76,6 +76,9 @@ export async function startApi() {
     }
   }
 
-  /** The database the handlers use, for setting up faults the API cannot cause. */
-  return { browser, db }
+  /**
+   * The database the handlers use, and its URL for opening other connections to it, for
+   * setting up faults the API cannot cause.
+   */
+  return { browser, db, databaseUrl }
 }
