@@ -1,13 +1,32 @@
-import { mkdtempSync } from 'node:fs'
+import { globSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as h3 from 'h3'
 import { vi } from 'vitest'
+
+const serverDir = fileURLToPath(new URL('..', import.meta.url))
+
+/**
+ * The method and path Nitro serves a handler file at, given its path relative to `server/`:
+ * `api/groups/[id]/index.patch.ts` is `PATCH /api/groups/:id`. A file without a method suffix answers every method.
+ */
+function nitroRoute(file: string): { method?: h3.RouterMethod; path: string } {
+  const segments = file.replace(/\.ts$/, '').split(/[\\/]/)
+  const match = /^(.*)\.(get|head|post|put|patch|delete|connect|options|trace)$/.exec(segments.at(-1)!)
+  if (match) segments[segments.length - 1] = match[1]!
+  if (segments.at(-1) === 'index') segments.pop()
+  const path = segments
+    .map((segment) => segment.replace(/^\[\.\.\.(.+)\]$/, '**:$1').replace(/\[(\w+)\]/g, ':$1'))
+    .join('/')
+  return { method: match?.[2] as h3.RouterMethod | undefined, path: `/${path}` }
+}
 
 /**
  * Serves the real API route handlers from an h3 app backed by a fresh SQLite file, so tests
  * can call endpoints over HTTP the way the app does. Nitro's auto-imports are provided as
- * globals: the h3 utilities themselves, and `useRuntimeConfig` pointing at the test database.
+ * globals: every h3 export, and `useRuntimeConfig` pointing at the test database. Every file
+ * under `server/api` is served at the route Nitro gives it, so a new endpoint needs no edit here.
  *
  * Tests live in `server/tests` rather than beside the handlers because Nitro would serve any
  * file under `server/api` as a route.
@@ -16,34 +35,19 @@ export async function startApi() {
   const databaseUrl = `file:${join(mkdtempSync(join(tmpdir(), 'lintocracy-test-')), 'test.db')}`
   const runtimeConfig = { databaseUrl, adminSecret: 'test-admin-secret' }
 
-  for (const name of [
-    'defineEventHandler',
-    'getRouterParam',
-    'createError',
-    'readBody',
-    'getQuery',
-    'getCookie',
-    'setCookie',
-  ] as const) {
-    vi.stubGlobal(name, h3[name])
-  }
+  for (const [name, value] of Object.entries(h3)) vi.stubGlobal(name, value)
   vi.stubGlobal('useRuntimeConfig', () => runtimeConfig)
 
   // Waits for the schema setup, as every request does.
   const { useDb } = await import('../db')
   const db = await useDb()
 
-  const routes: [method: 'get' | 'post' | 'delete', path: string, file: Promise<{ default: h3.EventHandler }>][] = [
-    ['post', '/api/groups', import('../api/groups/index.post')],
-    ['post', '/api/groups/by-invite/:token/join', import('../api/groups/by-invite/[token]/join.post')],
-    ['delete', '/api/groups/:id/votes', import('../api/groups/[id]/votes.delete')],
-    ['post', '/api/votes', import('../api/votes/index.post')],
-    ['get', '/api/votes/summary', import('../api/votes/summary.get')],
-    ['post', '/api/option-votes', import('../api/option-votes/index.post')],
-    ['get', '/api/option-votes/summary', import('../api/option-votes/summary.get')],
-  ]
   const router = h3.createRouter()
-  for (const [method, path, file] of routes) router[method](path, (await file).default)
+  for (const file of globSync('api/**/*.ts', { cwd: serverDir })) {
+    const { method, path } = nitroRoute(file)
+    const handler: { default: h3.EventHandler } = await import(join(serverDir, file))
+    router.add(path, handler.default, method)
+  }
   const handle = h3.toWebHandler(h3.createApp().use(router))
 
   /** A client with its own cookie jar, like one browser. */
@@ -72,6 +76,7 @@ export async function startApi() {
     return {
       get: <T>(path: string) => request<T>('GET', path),
       post: <T>(path: string, body: unknown) => request<T>('POST', path, body),
+      patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
       delete: <T>(path: string) => request<T>('DELETE', path),
     }
   }
