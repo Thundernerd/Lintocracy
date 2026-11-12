@@ -9,4 +9,8 @@ describe('normaliseListValue', () => {
   it('leaves a single item unchanged', () => {
     expect(normaliseListValue('public')).toBe('public')
   })
+
+  it('drops empty items left by a trailing or doubled comma', () => {
+    expect(normaliseListValue('public,, private,')).toBe('public, private')
+  })
 })

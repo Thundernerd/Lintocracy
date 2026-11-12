@@ -24,11 +24,12 @@ export function typedOptionValueError(value: string): string | null {
 /**
  * A comma-separated list value in one canonical spelling, so values that read
  * the same to Roslyn (`public,private` and `public, private`) are tallied as
- * one: each item trimmed, rejoined with `, `.
+ * one: each item trimmed, empty items dropped, rejoined with `, `.
  */
 export function normaliseListValue(value: string): string {
   return value
     .split(',')
     .map((item) => item.trim())
+    .filter(Boolean)
     .join(', ')
 }

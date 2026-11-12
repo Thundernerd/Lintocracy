@@ -41,6 +41,10 @@ export default defineEventHandler(async (event) => {
   }
   // Spelled one way, so equivalent lists are tallied as one value.
   const value = option.listValue ? normaliseListValue(parsed.data.value) : parsed.data.value
+  // A list of only commas normalises to nothing.
+  if (!value) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid option vote', message: 'Value must not be empty' })
+  }
   if (!acceptsTypedValues(option) && !option.values?.some((v) => v.value === value)) {
     throw createError({
       statusCode: 400,
