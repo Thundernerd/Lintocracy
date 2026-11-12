@@ -76,9 +76,20 @@ export async function startApi() {
     }
   }
 
+  /** Creates a group; the returned browser is its admin. */
+  async function newGroup() {
+    const admin = browser()
+    const { id, inviteToken } = await admin.post<{ id: string; inviteToken: string }>('/api/groups', {
+      name: 'Team',
+      displayName: 'Admin',
+      password: 'secret',
+    })
+    return { id, inviteToken, admin }
+  }
+
   /**
    * The database the handlers use, and its URL for opening other connections to it, for
    * setting up faults the API cannot cause.
    */
-  return { browser, db, databaseUrl }
+  return { browser, newGroup, db, databaseUrl }
 }

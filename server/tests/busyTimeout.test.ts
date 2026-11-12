@@ -41,12 +41,7 @@ describe('a write that meets a lock held by another connection', () => {
   const holdMs = 300
 
   it('waits for the lock to be released, then succeeds', { timeout: 15_000 }, async () => {
-    const admin = api.browser()
-    const { id: groupId } = await admin.post<{ id: string }>('/api/groups', {
-      name: 'Team',
-      displayName: 'Admin',
-      password: 'secret',
-    })
+    const { id: groupId, admin } = await api.newGroup()
 
     const lock = await holdWriteLock(holdMs)
     try {
