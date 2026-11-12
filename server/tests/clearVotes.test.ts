@@ -11,17 +11,6 @@ beforeAll(async () => {
   api = await startApi()
 })
 
-/** Creates a group; the returned browser is its admin. */
-async function newGroup() {
-  const admin = api.browser()
-  const { id, inviteToken } = await admin.post<{ id: string; inviteToken: string }>('/api/groups', {
-    name: 'Team',
-    displayName: 'Admin',
-    password: 'secret',
-  })
-  return { id, inviteToken, admin }
-}
-
 /** An option of IDE0003 that takes `true` or `false`. */
 const qualificationOption = (groupId: string) => ({
   groupId,
@@ -39,13 +28,13 @@ const totalOptionVotes = async (browser: Browser, groupId: string) =>
 
 describe('DELETE /api/groups/:id/votes', () => {
   it('returns zeros when the group has no votes', async () => {
-    const { id, admin } = await newGroup()
+    const { id, admin } = await api.newGroup()
 
     expect(await admin.delete(`/api/groups/${id}/votes`)).toEqual({ cleared: 0, clearedOptions: 0 })
   })
 
   it("reports the group's votes and option votes it cleared", async () => {
-    const { id: groupId, inviteToken, admin } = await newGroup()
+    const { id: groupId, inviteToken, admin } = await api.newGroup()
     const member = api.browser()
     await member.post(`/api/groups/by-invite/${inviteToken}/join`, { name: 'Member' })
 
@@ -60,8 +49,8 @@ describe('DELETE /api/groups/:id/votes', () => {
   })
 
   it("leaves the group with no votes, and other groups' votes alone", async () => {
-    const group = await newGroup()
-    const other = await newGroup()
+    const group = await api.newGroup()
+    const other = await api.newGroup()
     for (const { id: groupId, admin } of [group, other]) {
       await admin.post('/api/votes', { groupId, ruleId: 'IDE0003', vote: 'no' })
       await admin.post('/api/option-votes', { ...qualificationOption(groupId), value: 'true' })
@@ -79,7 +68,7 @@ describe('DELETE /api/groups/:id/votes', () => {
   })
 
   it('keeps every vote when the second delete fails', async () => {
-    const { id: groupId, admin } = await newGroup()
+    const { id: groupId, admin } = await api.newGroup()
     await admin.post('/api/votes', { groupId, ruleId: 'IDE0003', vote: 'no' })
     await admin.post('/api/option-votes', { ...qualificationOption(groupId), value: 'true' })
 
