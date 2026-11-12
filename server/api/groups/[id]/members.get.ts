@@ -5,7 +5,7 @@ import { members } from '../../../db/schema'
 
 export default defineEventHandler(async (event): Promise<GroupMember[]> => {
   const id = getRouterParam(event, 'id')!
-  const db = useDb()
+  const db = await useDb()
 
   const rows = await db
     .select({ id: members.id, name: members.name, createdAt: members.createdAt })

@@ -10,7 +10,7 @@ export async function buildAllTallies(
   groupId: string,
   options?: ConsensusOptions,
 ): Promise<RuleTally[]> {
-  const db = useDb()
+  const db = await useDb()
   const rows = await db
     .select({ ruleId: votes.ruleId, vote: votes.vote, severity: votes.severity })
     .from(votes)

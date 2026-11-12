@@ -9,7 +9,7 @@ const optionKey = (ruleId: string, optionName: string) => `${ruleId}::${optionNa
 
 /** Loads a group's option votes and computes a tally per documented option. */
 export async function buildAllOptionTallies(groupId: string): Promise<OptionTally[]> {
-  const db = useDb()
+  const db = await useDb()
   const rows = await db
     .select({ ruleId: optionVotes.ruleId, optionName: optionVotes.optionName, value: optionVotes.value })
     .from(optionVotes)

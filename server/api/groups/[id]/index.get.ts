@@ -7,7 +7,7 @@ import { isAdmin } from '../../../utils/groupAdmin'
 
 export default defineEventHandler(async (event): Promise<GroupContext> => {
   const id = getRouterParam(event, 'id')!
-  const db = useDb()
+  const db = await useDb()
 
   const [group] = await db.select().from(groups).where(eq(groups.id, id)).limit(1)
   if (!group) {

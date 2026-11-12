@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   const voterId = await getMemberId(event, groupId)
 
   const severity = vote === 'yes' ? parsed.data.severity! : null
-  const db = useDb()
+  const db = await useDb()
   const now = Date.now()
 
   const existing = await db

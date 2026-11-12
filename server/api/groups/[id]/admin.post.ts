@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Password required' })
   }
 
-  const db = useDb()
+  const db = await useDb()
   const [group] = await db.select().from(groups).where(eq(groups.id, id)).limit(1)
   if (!group) {
     throw createError({ statusCode: 404, statusMessage: 'Group not found' })

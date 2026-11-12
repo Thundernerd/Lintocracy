@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const db = useDb()
+  const db = await useDb()
   const [group] = await db
     .select({ id: groups.id, name: groups.name })
     .from(groups)

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const { name, displayName, password } = parsed.data
-  const db = useDb()
+  const db = await useDb()
   const now = Date.now()
 
   const id = newGroupId()

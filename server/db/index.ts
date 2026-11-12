@@ -26,7 +26,29 @@ function client() {
   return _client
 }
 
-export function useDb() {
+let _ready: Promise<void> | undefined
+
+/**
+ * Runs {@link ensureSchema} once and returns its promise, shared by every caller. A failed
+ * setup is forgotten, so the next caller retries it instead of failing for good.
+ */
+export function databaseReady() {
+  if (!_ready) {
+    _ready = ensureSchema().catch((error: unknown) => {
+      _ready = undefined
+      throw error
+    })
+  }
+  return _ready
+}
+
+/**
+ * The database, once its schema exists and the startup cleanup has run. Nitro does not wait
+ * for async plugins before serving requests, so every access waits here instead; a failed
+ * setup rejects, and the request fails with that error.
+ */
+export async function useDb() {
+  await databaseReady()
   if (!_db) {
     _db = drizzle(client(), { schema })
   }

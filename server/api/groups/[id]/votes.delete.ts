@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   requireAdmin(event, id)
 
-  const db = useDb()
+  const db = await useDb()
 
   const cleared = await db.$count(votes, eq(votes.groupId, id))
   const clearedOptions = await db.$count(optionVotes, eq(optionVotes.groupId, id))
