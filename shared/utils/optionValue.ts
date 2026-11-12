@@ -20,3 +20,15 @@ export function typedOptionValueError(value: string): string | null {
   if (!value.trim()) return 'Value must not be empty'
   return null
 }
+
+/**
+ * A comma-separated list value in one canonical spelling, so values that read
+ * the same to Roslyn (`public,private` and `public, private`) are tallied as
+ * one: each item trimmed, rejoined with `, `.
+ */
+export function normaliseListValue(value: string): string {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .join(', ')
+}

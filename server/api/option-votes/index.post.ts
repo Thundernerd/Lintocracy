@@ -5,7 +5,7 @@ import { optionVotes } from '../../db/schema'
 import { getMemberId } from '../../utils/membership'
 import { assertGroupExists } from '../../utils/group'
 import { rules } from '../../data/rules'
-import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
+import { acceptsTypedValues, normaliseListValue, typedOptionValueError } from '#shared/utils/optionValue'
 
 const bodySchema = z.object({
   groupId: z.string(),
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { groupId, ruleId, optionName, value } = parsed.data
+  const { groupId, ruleId, optionName } = parsed.data
   const rule = rules.find((r) => r.id === ruleId)
   const option = rule?.options?.find((o) => o.name === optionName)
   if (!option) {
@@ -39,6 +39,8 @@ export default defineEventHandler(async (event) => {
       statusMessage: `Unknown option: ${ruleId}.${optionName}`,
     })
   }
+  // Spelled one way, so equivalent lists are tallied as one value.
+  const value = option.listValue ? normaliseListValue(parsed.data.value) : parsed.data.value
   if (!acceptsTypedValues(option) && !option.values?.some((v) => v.value === value)) {
     throw createError({
       statusCode: 400,

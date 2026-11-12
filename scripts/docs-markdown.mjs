@@ -81,6 +81,7 @@ export function parseOptions(md) {
     let defaultValue
     const values = []
     let hasProseValue = false
+    let listValue = false
     let inValues = false
 
     for (const cols of rows) {
@@ -92,7 +93,11 @@ export function parseOptions(md) {
       const collectValueCell = () => {
         if (!v) return
         if (isLiteralValueCell(cell)) values.push({ value: v, description: desc })
-        else hasProseValue = true
+        else {
+          hasProseValue = true
+          // "One or more C# modifiers", "Comma-separated list of rule IDs": the value is a list.
+          if (/\b(one or more|comma-separated list)\b/i.test(v)) listValue = true
+        }
       }
       if (/^Option name/i.test(label)) {
         name = v
@@ -116,6 +121,7 @@ export function parseOptions(md) {
     if (!name) continue
     const option = { name, defaultValue, values: values.length ? values : undefined }
     if (values.length && hasProseValue) option.freeForm = true
+    if (listValue) option.listValue = true
     options.push(option)
   }
 

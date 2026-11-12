@@ -15,7 +15,7 @@ ${tables
 ## Next section
 `
 
-test('an Options table whose "Option values" cell is a description yields a free-form option', () => {
+test('an Options table whose "Option values" cell describes one or more items yields a free-form list option', () => {
   const md = optionsPage({
     name: 'csharp_preferred_modifier_order',
     rows: [
@@ -26,11 +26,16 @@ test('an Options table whose "Option values" cell is a description yields a free
   })
 
   assert.deepEqual(parseOptions(md), [
-    { name: 'csharp_preferred_modifier_order', defaultValue: 'public, private, protected', values: undefined },
+    {
+      name: 'csharp_preferred_modifier_order',
+      defaultValue: 'public, private, protected',
+      values: undefined,
+      listValue: true,
+    },
   ])
 })
 
-test('a described value beside literal values is dropped, the literals are kept and the option is flagged free-form', () => {
+test('a described value beside literal values is dropped, the literals are kept and the option is flagged free-form and a list', () => {
   const md = optionsPage({
     name: 'dotnet_remove_unnecessary_suppression_exclusions',
     rows: [
@@ -50,8 +55,22 @@ test('a described value beside literal values is dropped, the literals are kept 
         { value: 'none', description: 'Enables the rule for all rules (no exclusions)' },
       ],
       freeForm: true,
+      listValue: true,
     },
   ])
+})
+
+test('a described value that is a single string, not a list, does not flag the option as a list', () => {
+  const md = optionsPage({
+    name: 'file_header_template',
+    rows: [
+      '| **Option values** | non-empty string, optionally containing a `{fileName}` placeholder | Prefer the string as the required file header. |',
+      '|  | `unset` or empty string | Do not require a file header. |',
+      '| **Default option value** | `unset` |  |',
+    ],
+  })
+
+  assert.equal(parseOptions(md)[0].listValue, undefined)
 })
 
 test('an option whose values are all literals keeps them as enumerated values', () => {

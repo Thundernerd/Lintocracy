@@ -101,10 +101,12 @@ export function useVoting() {
     const previous = myOptionVotes.value[key]
     myOptionVotes.value = { ...myOptionVotes.value, [key]: { ruleId, optionName, value } }
     try {
-      await $fetch('/api/option-votes', {
+      // The server may respell the value (a list is normalised), so keep its spelling.
+      const saved = await $fetch<OptionVote>('/api/option-votes', {
         method: 'POST',
         body: { groupId, ruleId, optionName, value },
       })
+      myOptionVotes.value = { ...myOptionVotes.value, [key]: saved }
       await refreshTallies()
     } catch (error) {
       const next = { ...myOptionVotes.value }

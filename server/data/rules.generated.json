@@ -7165,11 +7165,13 @@
     "options": [
       {
         "name": "csharp_preferred_modifier_order",
-        "defaultValue": "public, private, protected, internal, file, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, required, volatile, async"
+        "defaultValue": "public, private, protected, internal, file, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, required, volatile, async",
+        "listValue": true
       },
       {
         "name": "visual_basic_preferred_modifier_order",
-        "defaultValue": "Partial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async"
+        "defaultValue": "Partial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async",
+        "listValue": true
       }
     ],
     "example": "// csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async\nclass MyClass\n{\n    private static readonly int _daysInYear = 365;\n}"
@@ -8441,7 +8443,8 @@
             "description": "Enables the rule for all rules (no exclusions)"
           }
         ],
-        "freeForm": true
+        "freeForm": true,
+        "listValue": true
       }
     ],
     "example": "using System.Diagnostics.CodeAnalysis;\n\nclass C1\n{\n    // Necessary pragma suppression\n#pragma warning disable IDE0051 // IDE0051: Remove unused member\n    private int UnusedMethod() => 0;\n#pragma warning restore IDE0051\n\n    // IDE0079: Unnecessary pragma suppression\n#pragma warning disable IDE0051 // IDE0051: Remove unused member\n    private int UsedMethod() => 0;\n#pragma warning restore IDE0051\n\n    public int PublicMethod() => UsedMethod();\n}\n\nclass C2\n{\n    // Necessary SuppressMessage attribute suppression\n    [SuppressMessage(\"CodeQuality\", \"IDE0051:Remove unused private members\", Justification = \"<Pending>\")]\n    private int _unusedField;\n\n    // IDE0079: Unnecessary SuppressMessage attribute suppression\n    [SuppressMessage(\"CodeQuality\", \"IDE0051:Remove unused private members\", Justification = \"<Pending>\")]\n    private int _usedField;\n\n    public int PublicMethod2() => _usedField;\n}"
