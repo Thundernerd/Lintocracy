@@ -60,7 +60,7 @@ export async function useDb() {
  * catalog no longer offers. Keeps local/dev setup zero-config; for production with a managed
  * DB this can be replaced by drizzle-kit migrations.
  */
-export async function ensureSchema() {
+async function ensureSchema() {
   await client().execute(`
     CREATE TABLE IF NOT EXISTS groups (
       id TEXT PRIMARY KEY,
