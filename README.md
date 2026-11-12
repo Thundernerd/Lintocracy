@@ -114,6 +114,9 @@ npm run dev
 App runs on `http://localhost:3000`. The SQLite database lives at `.data/lintocracy.db`;
 its schema is created automatically on first run.
 
+Run the tests with `npm test`. Every pull request and push to `main` runs `npm test` and
+`npm run build` on Node 22 (`.github/workflows/ci.yml`).
+
 ## Production
 
 ```bash
