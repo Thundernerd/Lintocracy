@@ -5,7 +5,7 @@ import { groups } from '../db/schema'
 
 /** Validates that a group exists, throwing 404 otherwise. */
 export async function assertGroupExists(groupId: string) {
-  const db = useDb()
+  const db = await useDb()
   const [row] = await db.select({ id: groups.id }).from(groups).where(eq(groups.id, groupId)).limit(1)
   if (!row) {
     throw createError({ statusCode: 404, statusMessage: 'Group not found' })

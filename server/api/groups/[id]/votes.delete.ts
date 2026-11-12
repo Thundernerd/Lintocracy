@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   requireAdmin(event, id)
 
-  const db = useDb()
+  const db = await useDb()
 
   // A batch runs as one transaction, so both deletes happen or neither does, and the counts
   // are the rows actually deleted (a vote cast mid-request is either cleared and counted, or

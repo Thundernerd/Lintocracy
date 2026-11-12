@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const db = useDb()
+  const db = await useDb()
   const result = await db
     .update(groups)
     .set({ name: parsed.data.name })

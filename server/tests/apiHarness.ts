@@ -29,8 +29,9 @@ export async function startApi() {
   }
   vi.stubGlobal('useRuntimeConfig', () => runtimeConfig)
 
-  const { ensureSchema, useDb } = await import('../db')
-  await ensureSchema()
+  // Waits for the schema setup, as every request does.
+  const { useDb } = await import('../db')
+  const db = await useDb()
 
   const routes: [method: 'get' | 'post' | 'delete', path: string, file: Promise<{ default: h3.EventHandler }>][] = [
     ['post', '/api/groups', import('../api/groups/index.post')],
@@ -76,5 +77,5 @@ export async function startApi() {
   }
 
   /** The database the handlers use, for setting up faults the API cannot cause. */
-  return { browser, db: useDb() }
+  return { browser, db }
 }
