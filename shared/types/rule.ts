@@ -36,6 +36,8 @@ export interface RuleOption {
   values?: RuleOptionValue[]
   /** True when the option lists `values` but also accepts other values (e.g. a list of rule IDs). */
   freeForm?: boolean
+  /** True when the value is a comma-separated list (e.g. IDE0036's modifier order), normalised to `a, b, c` when voted. */
+  listValue?: boolean
 }
 
 export type SeverityBreakdown = Record<Severity, number>

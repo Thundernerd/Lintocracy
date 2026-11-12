@@ -5,7 +5,7 @@ import { optionVotes } from '../../db/schema'
 import { getMemberId } from '../../utils/membership'
 import { assertGroupExists } from '../../utils/group'
 import { rules } from '../../data/rules'
-import { isAcceptedOptionValue, typedOptionValueError } from '#shared/utils/optionValue'
+import { isAcceptedOptionValue, normaliseOptionValue, typedOptionValueError } from '#shared/utils/optionValue'
 
 const bodySchema = z.object({
   groupId: z.string(),
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { groupId, ruleId, optionName, value } = parsed.data
+  const { groupId, ruleId, optionName } = parsed.data
   const rule = rules.find((r) => r.id === ruleId)
   const option = rule?.options?.find((o) => o.name === optionName)
   if (!option) {
@@ -38,6 +38,12 @@ export default defineEventHandler(async (event) => {
       statusCode: 404,
       statusMessage: `Unknown option: ${ruleId}.${optionName}`,
     })
+  }
+  // Spelled one way, so equivalent lists are tallied as one value.
+  const value = normaliseOptionValue(option, parsed.data.value)
+  // A list of only commas normalises to nothing.
+  if (!value) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid option vote', message: 'Value must not be empty' })
   }
   if (!isAcceptedOptionValue(option, value)) {
     throw createError({

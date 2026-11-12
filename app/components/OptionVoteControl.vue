@@ -3,6 +3,7 @@ import type { RuleOption, RuleOptionValue } from '#shared/types/rule'
 import {
   acceptsTypedValues,
   isDocumentedOptionValue,
+  normaliseOptionValue,
   typedOptionValueError,
 } from '#shared/utils/optionValue'
 
@@ -51,8 +52,10 @@ watch(myValue, (value) => (draft.value = initialDraft(value)), { immediate: true
 
 // An empty draft only disables the button; the hint already asks for a value.
 const draftError = computed(() => (draft.value.trim() ? typedOptionValueError(draft.value) : null))
+// Spelled as the server stores it, so an equivalent list counts as my current vote.
+const typedValue = computed(() => normaliseOptionValue(props.option, draft.value))
 const canVoteTyped = computed(
-  () => !!draft.value.trim() && !draftError.value && draft.value.trim() !== myValue.value,
+  () => !!typedValue.value && !draftError.value && typedValue.value !== myValue.value,
 )
 
 const hint = computed(() => {
@@ -63,7 +66,7 @@ const hint = computed(() => {
 })
 
 async function voteTyped() {
-  if (canVoteTyped.value) await vote(draft.value.trim())
+  if (canVoteTyped.value) await vote(typedValue.value)
 }
 
 async function clear() {

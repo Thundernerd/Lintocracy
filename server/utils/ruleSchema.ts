@@ -41,6 +41,7 @@ export const ruleSchema = z.object({
           .array(z.object({ value: z.string().min(1), description: z.string().optional() }))
           .optional(),
         freeForm: z.boolean().optional(),
+        listValue: z.boolean().optional(),
       }),
     )
     .optional(),
