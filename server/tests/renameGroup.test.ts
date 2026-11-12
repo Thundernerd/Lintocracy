@@ -8,14 +8,20 @@ beforeAll(async () => {
   api = await startApi()
 })
 
+/** Creates a group named "Team"; the returned browser is its admin. */
+async function newGroup() {
+  const admin = api.browser()
+  const { id } = await admin.post<{ id: string }>('/api/groups', {
+    name: 'Team',
+    displayName: 'Admin',
+    password: 'secret',
+  })
+  return { id, admin }
+}
+
 describe('PATCH /api/groups/:id', () => {
   it('renames the group', async () => {
-    const admin = api.browser()
-    const { id } = await admin.post<{ id: string }>('/api/groups', {
-      name: 'Team',
-      displayName: 'Admin',
-      password: 'secret',
-    })
+    const { id, admin } = await newGroup()
 
     expect(await admin.patch(`/api/groups/${id}`, { name: '  Platform team  ' })).toEqual({
       id,
@@ -25,12 +31,7 @@ describe('PATCH /api/groups/:id', () => {
   })
 
   it('refuses a browser that is not the admin', async () => {
-    const admin = api.browser()
-    const { id } = await admin.post<{ id: string }>('/api/groups', {
-      name: 'Team',
-      displayName: 'Admin',
-      password: 'secret',
-    })
+    const { id, admin } = await newGroup()
 
     await expect(api.browser().patch(`/api/groups/${id}`, { name: 'Taken over' })).rejects.toThrow(/-> 403/)
     expect((await admin.get<GroupContext>(`/api/groups/${id}`)).name).toBe('Team')
