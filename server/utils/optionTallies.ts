@@ -27,17 +27,11 @@ export async function buildAllOptionTallies(groupId: string): Promise<OptionTall
   const tallies: OptionTally[] = []
   for (const rule of rules) {
     for (const opt of rule.options ?? []) {
-      tallies.push(
-        computeOptionTally(
-          rule.id,
-          opt.name,
-          opt.defaultValue,
-          // Votes stored before the catalog dropped their value no longer count.
-          (byOption.get(optionKey(rule.id, opt.name)) ?? []).filter((v) =>
-            isAcceptedOptionValue(opt, v.value),
-          ),
-        ),
+      // Votes stored before the catalog dropped their value no longer count.
+      const countedVotes = (byOption.get(optionKey(rule.id, opt.name)) ?? []).filter((v) =>
+        isAcceptedOptionValue(opt, v.value),
       )
+      tallies.push(computeOptionTally(rule.id, opt.name, opt.defaultValue, countedVotes))
     }
   }
   return tallies

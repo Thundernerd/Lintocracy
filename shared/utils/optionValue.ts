@@ -9,13 +9,17 @@ export function acceptsTypedValues(option: RuleOption): boolean {
   return !option.values?.length || !!option.freeForm
 }
 
+/** Whether a value is one of the option's documented values. */
+export function isDocumentedOptionValue(option: RuleOption, value: string): boolean {
+  return !!option.values?.some((v) => v.value === value)
+}
+
 /**
- * Whether an option currently accepts a value: any value when voters may type
- * their own, otherwise only one of its documented values. A vote stored before
- * the catalog dropped a value fails this check.
+ * Whether an option accepts a value: any value when voters may type their own,
+ * otherwise only one of its documented values.
  */
 export function isAcceptedOptionValue(option: RuleOption, value: string): boolean {
-  return acceptsTypedValues(option) || !!option.values?.some((v) => v.value === value)
+  return acceptsTypedValues(option) || isDocumentedOptionValue(option, value)
 }
 
 /**
