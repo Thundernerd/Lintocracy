@@ -5,12 +5,19 @@ import { optionVotes } from '../../db/schema'
 import { getMemberId } from '../../utils/membership'
 import { assertGroupExists } from '../../utils/group'
 import { rules } from '../../data/rules'
+import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
 
 const bodySchema = z.object({
   groupId: z.string(),
   ruleId: z.string(),
   optionName: z.string(),
-  value: z.string(),
+  value: z
+    .string()
+    .superRefine((v, ctx) => {
+      const message = typedOptionValueError(v)
+      if (message) ctx.addIssue({ code: 'custom', message })
+    })
+    .trim(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -32,8 +39,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: `Unknown option: ${ruleId}.${optionName}`,
     })
   }
-  // Only accept documented values when the option enumerates them.
-  if (option.values?.length && !option.values.some((v) => v.value === value)) {
+  if (!acceptsTypedValues(option) && !option.values?.some((v) => v.value === value)) {
     throw createError({
       statusCode: 400,
       statusMessage: `Invalid value for ${optionName}: ${value}`,
