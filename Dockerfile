@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # check=skip=FromPlatformFlagConstDisallowed
-# The image pins linux/amd64 on purpose: it ships the x64-only @libsql/linux-x64-gnu binding.
+# The image pins linux/amd64 on purpose: it ships an x64-only native libsql binding.
 
 FROM --platform=linux/amd64 node:22-bookworm-slim AS build
 
