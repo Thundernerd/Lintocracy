@@ -2,6 +2,7 @@ import type {
   MyVote,
   OptionTally,
   Rule,
+  RuleOption,
   RuleTally,
   Severity,
   SeverityBreakdown,
@@ -112,10 +113,10 @@ export function computeTally(
  */
 export function computeOptionTally(
   ruleId: string,
-  optionName: string,
-  defaultValue: string | undefined,
+  option: RuleOption,
   votes: { value: string }[],
 ): OptionTally {
+  const { name: optionName, defaultValue } = option
   const counts: Record<string, number> = {}
   for (const v of votes) {
     counts[v.value] = (counts[v.value] ?? 0) + 1

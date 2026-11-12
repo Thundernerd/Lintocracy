@@ -31,7 +31,7 @@ export async function buildAllOptionTallies(groupId: string): Promise<OptionTall
       const countedVotes = (byOption.get(optionKey(rule.id, opt.name)) ?? []).filter((v) =>
         isAcceptedOptionValue(opt, v.value),
       )
-      tallies.push(computeOptionTally(rule.id, opt.name, opt.defaultValue, countedVotes))
+      tallies.push(computeOptionTally(rule.id, opt, countedVotes))
     }
   }
   return tallies
