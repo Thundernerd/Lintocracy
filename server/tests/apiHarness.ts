@@ -5,28 +5,43 @@ import { fileURLToPath } from 'node:url'
 import * as h3 from 'h3'
 import { vi } from 'vitest'
 
-const serverDir = fileURLToPath(new URL('..', import.meta.url))
+const rootDir = fileURLToPath(new URL('../..', import.meta.url))
+
+/** The source files Nitro scans: `api/**` for routes, `utils/*` for auto-imports. */
+const sourceFiles = (pattern: string) =>
+  globSync(`${pattern}.{js,mjs,cjs,ts,mts,cts,tsx,jsx}`, {
+    cwd: rootDir,
+    exclude: (path) => /\.test\.[^/\\]+$/.test(path),
+  })
+
+// Mirrors Nitro's `scanServerRoutes` (nitropack/dist/core/index.mjs).
+const suffixRegex = /(\.(?<method>connect|delete|get|head|options|patch|post|put|trace))?(\.(?<env>dev|prod|prerender))?$/
 
 /**
- * The method and path Nitro serves a handler file at, given its path relative to `server/`:
- * `api/groups/[id]/index.patch.ts` is `PATCH /api/groups/:id`. A file without a method suffix answers every method.
+ * The method, path and environment Nitro serves a route file at, given its path relative to
+ * `server/`: `api/groups/[id]/index.patch.ts` is `PATCH /api/groups/:id`. A file without a
+ * method suffix answers every method.
  */
-function nitroRoute(file: string): { method?: h3.RouterMethod; path: string } {
-  const segments = file.replace(/\.ts$/, '').split(/[\\/]/)
-  const match = /^(.*)\.(get|head|post|put|patch|delete|connect|options|trace)$/.exec(segments.at(-1)!)
-  if (match) segments[segments.length - 1] = match[1]!
-  if (segments.at(-1) === 'index') segments.pop()
-  const path = segments
-    .map((segment) => segment.replace(/^\[\.\.\.(.+)\]$/, '**:$1').replace(/\[(\w+)\]/g, ':$1'))
-    .join('/')
-  return { method: match?.[2] as h3.RouterMethod | undefined, path: `/${path}` }
+function nitroRoute(file: string) {
+  let route = file
+    .replace(/\.[A-Za-z]+$/, '')
+    .replace(/\(([^(/\\]+)\)[/\\]/g, '')
+    .replace(/\[\.{3}]/g, '**')
+    .replace(/\[\.{3}(\w+)]/g, '**:$1')
+    .replace(/\[([^/\]]+)]/g, ':$1')
+    .replaceAll('\\', '/')
+  const { method, env } = route.match(suffixRegex)!.groups as { method?: h3.RouterMethod; env?: string }
+  route = route.replace(suffixRegex, '')
+  return { method, env, path: `/${route}`.replace(/\/index$/, '') || '/' }
 }
 
 /**
  * Serves the real API route handlers from an h3 app backed by a fresh SQLite file, so tests
  * can call endpoints over HTTP the way the app does. Nitro's auto-imports are provided as
- * globals: every h3 export, and `useRuntimeConfig` pointing at the test database. Every file
- * under `server/api` is served at the route Nitro gives it, so a new endpoint needs no edit here.
+ * globals: every h3 export, every export of `server/utils` and `shared/utils`, and
+ * `useRuntimeConfig` pointing at the test database. Every file under `server/api` is served at
+ * the route Nitro gives it, as in production (`.prod` routes, not `.dev` or `.prerender` ones),
+ * so a test for a new endpoint needs no edit here.
  *
  * Tests live in `server/tests` rather than beside the handlers because Nitro would serve any
  * file under `server/api` as a route.
@@ -37,16 +52,20 @@ export async function startApi() {
 
   for (const [name, value] of Object.entries(h3)) vi.stubGlobal(name, value)
   vi.stubGlobal('useRuntimeConfig', () => runtimeConfig)
+  for (const file of sourceFiles('{server,shared}/utils/*')) {
+    for (const [name, value] of Object.entries(await import(join(rootDir, file)))) vi.stubGlobal(name, value)
+  }
 
   // Waits for the schema setup, as every request does.
   const { useDb } = await import('../db')
   const db = await useDb()
 
   const router = h3.createRouter()
-  for (const file of globSync('api/**/*.ts', { cwd: serverDir })) {
-    const { method, path } = nitroRoute(file)
-    const handler: { default: h3.EventHandler } = await import(join(serverDir, file))
-    router.add(path, handler.default, method)
+  for (const file of sourceFiles('server/api/**/*')) {
+    const { method, env, path } = nitroRoute(file.slice('server/'.length))
+    if (env && env !== 'prod') continue
+    const { default: handler }: { default: h3.EventHandler } = await import(join(rootDir, file))
+    router.add(path, handler, method)
   }
   const handle = h3.toWebHandler(h3.createApp().use(router))
 
@@ -74,6 +93,8 @@ export async function startApi() {
     }
 
     return {
+      /** Any method, for endpoints the shorthands below don't cover. */
+      request,
       get: <T>(path: string) => request<T>('GET', path),
       post: <T>(path: string, body: unknown) => request<T>('POST', path, body),
       patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
