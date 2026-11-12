@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { RuleOption } from '#shared/types/rule'
+import type { RuleOption, RuleOptionValue } from '#shared/types/rule'
+import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
 
 const props = defineProps<{ ruleId: string; option: RuleOption }>()
 
@@ -16,11 +17,11 @@ function count(value: string) {
   return tally.value?.counts[value] ?? 0
 }
 
-/** Whether the option takes values beyond its documented ones (typed in by voters). */
-const acceptsOther = computed(() => !props.option.values?.length || !!props.option.freeForm)
+const hasDocumentedValues = computed(() => !!props.option.values?.length)
+const acceptsOther = computed(() => acceptsTypedValues(props.option))
 
 /** Documented values first, then typed values the group has voted for, most votes first. */
-const choices = computed(() => {
+const choices = computed<RuleOptionValue[]>(() => {
   const documented = props.option.values ?? []
   if (!acceptsOther.value) return documented
   const known = new Set(documented.map((v) => v.value))
@@ -29,25 +30,25 @@ const choices = computed(() => {
   const others = [...typed]
     .filter((v) => !known.has(v))
     .sort((a, b) => count(b) - count(a) || a.localeCompare(b))
-    .map((value) => ({ value, description: undefined }))
+    .map((value) => ({ value }))
   return [...documented, ...others]
 })
 
 // Free-form options start from the documented default; documented choices are the buttons above.
-const draft = ref(props.option.values?.length ? '' : (props.option.defaultValue ?? ''))
+const draft = ref(hasDocumentedValues.value ? '' : (props.option.defaultValue ?? ''))
 // Show my typed vote in the input (now or once it loads); documented values have their own button.
 watch(myValue, (value) => {
   if (value && !props.option.values?.some((v) => v.value === value)) draft.value = value
 }, { immediate: true })
 
-/** Mirrors the API: one line, trimmed, not empty. */
-const draftError = computed(() => (/[\r\n]/.test(draft.value) ? 'Use a single line' : null))
+// An empty draft only disables the button; the hint already asks for a value.
+const draftError = computed(() => (draft.value.trim() ? typedOptionValueError(draft.value) : null))
 const canVoteTyped = computed(
-  () => !draftError.value && !!draft.value.trim() && draft.value.trim() !== myValue.value,
+  () => !!draft.value.trim() && !draftError.value && draft.value.trim() !== myValue.value,
 )
 
 const hint = computed(() => {
-  if (props.option.values?.length) return 'Or type another value.'
+  if (hasDocumentedValues.value) return 'Or type another value.'
   return choices.value.length
     ? 'Type the value you prefer, or click one above to join it.'
     : 'Type the value you prefer.'
@@ -153,7 +154,7 @@ async function vote(value: string) {
         <UInput
           v-model="draft"
           :aria-label="`Value for ${option.name}`"
-          :placeholder="option.values?.length ? 'Another value' : (option.defaultValue ?? 'Type a value')"
+          :placeholder="hasDocumentedValues ? 'Another value' : (option.defaultValue ?? 'Type a value')"
           :disabled="busy || !hasGroup"
           class="flex-1 font-mono"
         />

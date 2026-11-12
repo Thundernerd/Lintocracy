@@ -5,17 +5,19 @@ import { optionVotes } from '../../db/schema'
 import { getMemberId } from '../../utils/membership'
 import { assertGroupExists } from '../../utils/group'
 import { rules } from '../../data/rules'
+import { acceptsTypedValues, typedOptionValueError } from '#shared/utils/optionValue'
 
 const bodySchema = z.object({
   groupId: z.string(),
   ruleId: z.string(),
   optionName: z.string(),
-  // Trimmed, non-empty and on one line, so the `.editorconfig` line stays well formed.
   value: z
     .string()
-    .refine((v) => !/[\r\n]/.test(v), 'Value must be on a single line')
-    .trim()
-    .min(1, 'Value must not be empty'),
+    .superRefine((v, ctx) => {
+      const message = typedOptionValueError(v)
+      if (message) ctx.addIssue({ code: 'custom', message })
+    })
+    .trim(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -37,8 +39,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: `Unknown option: ${ruleId}.${optionName}`,
     })
   }
-  // Only accept documented values when the option enumerates them and takes nothing else.
-  if (option.values?.length && !option.freeForm && !option.values.some((v) => v.value === value)) {
+  if (!acceptsTypedValues(option) && !option.values?.some((v) => v.value === value)) {
     throw createError({
       statusCode: 400,
       statusMessage: `Invalid value for ${optionName}: ${value}`,
