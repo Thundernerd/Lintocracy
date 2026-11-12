@@ -131,7 +131,8 @@ database is the SQLite file at `.data/lintocracy.db`, so keep that directory on 
 
 ### Docker
 
-Every push to `main` builds and publishes a Docker image (`.github/workflows/docker.yml`).
+Every push to `main` or a `v*` tag builds and publishes a Docker image
+(`.github/workflows/docker.yml`); you can also run the workflow by hand from the Actions tab.
 `docker-compose.yml` runs it with the database on a named volume:
 
 ```bash
