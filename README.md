@@ -68,6 +68,7 @@ shared/
   types/                # shared types (Rule, Severity, RuleTally, groups, ...)
   utils/consensus.ts    # vote -> consensus computation (incl. tie-breaking)
   utils/editorconfig.ts # consensus -> .editorconfig text
+  utils/optionValue.ts  # which option values can be typed, and how they are checked and normalised
 scripts/                # rules:generate and rules:enrich (see below)
 ```
 

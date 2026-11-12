@@ -92,8 +92,9 @@ export function parseOptions(md) {
       // Only literal cells are values; a prose cell describes other accepted values and is dropped.
       const collectValueCell = () => {
         if (!v) return
-        if (isLiteralValueCell(cell)) values.push({ value: v, description: desc })
-        else {
+        if (isLiteralValueCell(cell)) {
+          values.push({ value: v, description: desc })
+        } else {
           hasProseValue = true
           // "One or more C# modifiers", "Comma-separated list of rule IDs": the value is a list.
           if (/\b(one or more|comma-separated list)\b/i.test(v)) listValue = true
