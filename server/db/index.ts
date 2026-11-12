@@ -34,8 +34,9 @@ export function useDb() {
 }
 
 /**
- * Creates the schema if it does not exist. Keeps local/dev setup zero-config;
- * for production with a managed DB this can be replaced by drizzle-kit migrations.
+ * Creates the schema if it does not exist, then deletes option votes for prose values the
+ * catalog no longer offers. Keeps local/dev setup zero-config; for production with a managed
+ * DB this can be replaced by drizzle-kit migrations.
  */
 export async function ensureSchema() {
   await client().execute(`
